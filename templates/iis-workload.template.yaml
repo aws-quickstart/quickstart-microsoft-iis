@@ -5,9 +5,85 @@ Description: "This CloudFormation Template demonstrates two ways to configure Wi
   Manager Associations"
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: "Launch into an new VPC"
-    Order: "1"
-  #AWS::CloudFormation::Interface:
+    EntrypointName: "Launch into an existing VPC"
+    Order: "2"
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Active Directory Information
+        Parameters:
+          - DomainDNSName
+          - DomainNetBIOSName
+          - DomainAdminUser
+          - DomainAdminPassword
+      - Label:
+          default: Amazon EC2 Configuration for IIS Servers
+        Parameters:
+          - KeyPairName
+          - IISServerInstanceType
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - AvailabilityZones
+          - VPCCIDR
+          - VPCID
+          - PrivateSubnet1ID
+          - PrivateSubnet2ID
+          - PublicSubnet1ID
+          - PublicSubnet2ID
+      - Label:
+          default: Remote Desktop Gateway Configuration
+        Parameters:
+          - RDGWCIDR
+          - NumberOfRDGWHosts
+          - RDGWInstanceType
+      - Label:
+          default: AWS Quick Start Configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3BucketRegion
+          - QSS3KeyPrefix
+    ParameterLabels:
+      AvailabilityZones:
+        default: Availability Zones
+      AvailabiltyGroupName:
+        default: Availability group name
+      DomainAdminPassword:
+        default: Domain admin password
+      DomainAdminUser:
+        default: Domain admin user name
+      DomainDNSName:
+        default: Domain DNS name
+      DomainNetBIOSName:
+        default: Domain NetBIOS name
+      KeyPairName:
+        default: Key pair name
+      NumberOfRDGWHosts:
+        default: Number of RDGW hosts
+      PrivateSubnet1CIDR:
+        default: Private subnet 1 CIDR
+      PrivateSubnet2CIDR:
+        default: Private subnet 2 CIDR
+      PrivateSubnet3CIDR:
+        default: Private subnet 3 CIDR
+      PublicSubnet1CIDR:
+        default: Public subnet 1 CIDR
+      PublicSubnet2CIDR:
+        default: Public subnet 2 CIDR
+      PublicSubnet3CIDR:
+        default: Public subnet 3 CIDR
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket region
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+      RDGWInstanceType:
+        default: RDGW instance type
+      RDGWCIDR:
+        default: Allowed RDGW external access CIDR
+      VPCCIDR:
+        default: VPC CIDR
 Parameters:
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
@@ -39,40 +115,62 @@ Parameters:
     MaxLength: '15'
     MinLength: '1'
     Type: String
-  S3BucketName:
+  QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
-    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+    ConstraintDescription: Can include numbers, lowercase
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
-    Default: alpublic
-    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
+    Default: aws-quickstart
+    Description: S3 bucket name for the Quick Start assets. This name
       can include numbers, lowercase letters, uppercase letters, and hyphens (-).
       It cannot start or end with a hyphen (-).
     Type: String
-  S3KeyPrefix:
+  QSS3BucketRegion:
+    Default: us-east-1
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+    Type: String
+  QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
-    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+    ConstraintDescription: Can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slash (/).
-    Default: reinvent2020/
-    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+    Default: quickstart-microsoft-iis/
+    Description: S3 key prefix for the Quick Start assets. This prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     Type: String
-  InstanceTypeParameter:
-    Type: String
-    Default: t3.2xlarge
+  IISServerInstanceType:
     AllowedValues:
-      - t2.2xlarge
-      - t3.2xlarge
+      - t2.large
+      - t3.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
       - m5.large
-      - c5.large
-    Description: Select an instance type. The default instance type is t3.2xlarge.
-  LaunchTemplateSecurityGroupParameter:
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: m5.xlarge
+    Description: Amazon EC2 instance type for the second Active Directory instance
+    Type: String
+  DomainMemberSecurityGroup:
     Type: List<AWS::EC2::SecurityGroup::Id>
-    Description: Select EC2 security group to assign to the launch template.
-  VpcId:
-    Type: List<AWS::EC2::VPC::Id>
-    Description: List of Virtual Private Cloud (VPC) Ids in your account.
+    Description: Select EC2 security group that allows for Active Directory communication.
+  PublicSubnet1ID:
+    Description: ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  PublicSubnet2ID:
+    Description: ID of the public subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet1ID:
+    Description: ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2ID:
+    Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  VPCID:
+    Description: ID of the VPC (e.g., vpc-0343606e)
+    Type: AWS::EC2::VPC::Id
   #ELBSchemeParameter:
   #  Type: String
   #  Default: internet-facing
@@ -86,16 +184,16 @@ Parameters:
   #ELBSecurityGroupParameter:
   #  Type: List<AWS::EC2::SecurityGroup::Id>
   #  Description: Select EC2 security group to assign to the ELB.
-  ASGMinSizeParameter:
+  ASGMinSize:
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
-  ASGMaxSizeParameter:
+  ASGMaxSize:
     Type: Number
     Description: Maximum instance size for the Auto Scaling Group.
-  ASGDesiredCapacityParameter:
+  ASGDesiredCapacity:
     Type: Number
     Description: Desired capacity instance size for the Auto Scaling Group.
-  ASGSubnetParameter:
+  ASGSubnet:
     Type: List<AWS::EC2::Subnet::Id>
     Description: Select EC2 subnets to assign to the Auto Scaling Group.
 Resources:
@@ -117,14 +215,14 @@ Resources:
   IAMStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${S3BucketName}.s3.${AWS::URLSuffix}/${S3KeyPrefix}iam-roles.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}iam-roles.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
   AutomationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${S3BucketName}.s3.${AWS::URLSuffix}/${S3KeyPrefix}automation-parts.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}automation-parts.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
@@ -132,19 +230,19 @@ Resources:
   WebAutoScaleStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${S3BucketName}.s3.${AWS::URLSuffix}/${S3KeyPrefix}asg-lifecyclehooks.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}asg-lifecyclehooks.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
-        InstanceTypeParameter:
-        LaunchTemplateSecurityGroupParameter:
-        VpcId:
-        ASGDesiredCapacityParameter:
-        ASGMinSizeParameter:
-        ASGMaxSizeParameter:
-        ExecutionResourceArn:
-        SetupConfigurationDocName:
-        RemoveConfigurationDocName:
-        SSMInstanceProfileName:
+        IISServerInstanceType: !Ref 'IISServerInstanceType'
+        DomainMemberSecurityGroup: !Ref 'DomainMemberSecurityGroup'
+        VpcId: !Ref 'VpcId'
+        ASGDesiredCapacity: !Ref 'ASGDesiredCapacity:'
+        ASGMinSize: !Ref 'ASGMinSize'
+        ASGMaxSize: !Ref 'ASGMaxSize'
+        ExecutionResourceArn: !GetAtt 'IAMStack.Outputs.ExecutionResourceArn'
+        SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
+        RemoveConfigurationDocName: !GetAtt 'AutomationStack.Outputs.RemoveConfigurationDocName'
+        SSMInstanceProfileName: !GetAtt 'IAMStack.Outputs.ExecutionResourceArn'
 Outputs:
   ConfigBucket:
     Value: !Ref ConfigBucket

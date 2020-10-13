@@ -24,34 +24,41 @@ Parameters:
     Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base
     Description: 'Enter an AMI Id. The default value is Windows Server 2019 Core:
       /aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base.'
-  InstanceTypeParameter:
-    Type: String
-    Default: t3.2xlarge
+  IISServerInstanceType:
     AllowedValues:
-      - t2.2xlarge
+      - t2.large
+      - t3.large
       - t3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
       - m5.large
-      - c5.large
-    Description: Select an instance type. The default instance type is t3.2xlarge.
-  LaunchTemplateSecurityGroupParameter:
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: t3.2xlarge
+    Description: Amazon EC2 instance type for the Internet Information Services servers
+    Type: String
+  DomainMemberSecurityGroup:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Select EC2 security group to assign to the launch template.
-  VpcIdParameter:
-    Type: List<AWS::EC2::VPC::Id>
-    Description: List of Virtual Private Cloud (VPC) Ids in your account.
-  ELBSchemeParameter:
-    Type: String
-    Default: internet-facing
-    AllowedValues:
-      - internet-facing
-      - internal
-    Description: Select whether the ELB is internet-facing (public) or internal (private).
-  ELBSubnetParameter:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: Select EC2 subnets to assign to the ELB.
-  ELBSecurityGroupParameter:
-    Type: List<AWS::EC2::SecurityGroup::Id>
-    Description: Select EC2 security group to assign to the ELB.
+#  VPCID:
+#    Type: List<AWS::EC2::VPC::Id>
+#    Description: List of Virtual Private Cloud (VPC) Ids in your account.
+#  ELBSchemeParameter:
+#    Type: String
+#    Default: internet-facing
+#    AllowedValues:
+#      - internet-facing
+#      - internal
+#    Description: Select whether the ELB is internet-facing (public) or internal (private).
+#  ELBSubnetParameter:
+#    Type: List<AWS::EC2::Subnet::Id>
+#    Description: Select EC2 subnets to assign to the ELB.
+#  ELBSecurityGroupParameter:
+#    Type: List<AWS::EC2::SecurityGroup::Id>
+#    Description: Select EC2 security group to assign to the ELB.
   ASGMinSizeParameter:
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
@@ -83,15 +90,15 @@ Metadata:
           default: Launch Template Configuration
         Parameters:
           - ImageIdParameter
-          - InstanceTypeParameter
-          - LaunchTemplateSecurityGroupParameter
-      - Label:
-          default: Elastic Load Balancer Configuration
-        Parameters:
-          - VpcIdParameter
-          - ELBSchemeParameter
-          - ELBSubnetParameter
-          - ELBSecurityGroupParameter
+          - IISServerInstanceType
+     #     - LaunchTemplateSecurityGroupParameter
+     # - Label:
+     #     default: Elastic Load Balancer Configuration
+     #   Parameters:
+     #     - VPCID
+     #     - ELBSchemeParameter
+     #     - ELBSubnetParameter
+     #     - ELBSecurityGroupParameter
       - Label:
           default: Amazon EC2 Auto Scaling Configuration
         Parameters:
@@ -102,18 +109,18 @@ Metadata:
     ParameterLabels:
       ImageIdParameter:
         default: Amazon Machine Image (AMI) Id
-      InstanceTypeParameter:
+      IISServerInstanceType:
         default: Instance Type
-      LaunchTemplateSecurityGroupParameter:
-        default: Security Group
-      VpcIdParameter:
-        default: Vpc Id
-      ELBSchemeParameter:
-        default: ELB Scheme
-      ELBSecurityGroupParameter:
-        default: Security Group
-      ELBSubnetParameter:
-        default: VPC Subnets
+    #  LaunchTemplateSecurityGroupParameter:
+    #    default: Security Group
+    #  VPCID:
+    #    default: Vpc Id
+    #  ELBSchemeParameter:
+    #    default: ELB Scheme
+    #  ELBSecurityGroupParameter:
+    #    default: Security Group
+    #  ELBSubnetParameter:
+    #    default: VPC Subnets
       ASGSubnetParameter:
         default: VPC Subnets
       ASGMinSizeParameter:
@@ -128,12 +135,12 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       LaunchTemplateData:
-        InstanceType: !Ref 'InstanceTypeParameter'
+        InstanceType: !Ref 'IISServerInstanceType'
         ImageId: !Ref 'ImageIdParameter'
         SecurityGroupIds:
           - !Select
             - '0'
-            - !Ref 'LaunchTemplateSecurityGroupParameter'
+            - !Ref 'DomainMemberSecurityGroup'
         IamInstanceProfile:
           Name: !Ref 'SSMInstanceProfileName'
         TagSpecifications:
@@ -164,7 +171,7 @@ Resources:
 #      Protocol: HTTP
 #      VpcId: !Select
 #        - '0'
-#        - !Ref 'VpcIdParameter'
+#        - !Ref 'VPCID'
 #      HealthyThresholdCount: 5
 #      HealthCheckTimeoutSeconds: 120
 #      HealthCheckIntervalSeconds: 300
