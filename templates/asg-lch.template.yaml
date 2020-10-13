@@ -1,0 +1,299 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Launch a scalable IIS environment based on a launch template, Application
+  Load Balancer and Auto Scaling Group. Scaling handled by Lifecycle Hooks, EventBridge,
+  and .NET Core 3.1 Lambda function.
+Parameters:
+  ConfigBucket:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Description: S3 bucket name where PowerShell DSC Mof files exist and HTML web files. Config bucket name
+      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
+      It cannot start or end with a hyphen (-).
+    Type: String
+  DomainDNSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: example.com
+    Description: Fully qualified domain name (FQDN).
+    MaxLength: '255'
+    MinLength: '2'
+    Type: String
+  ImageIdParameter:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base
+    Description: 'Enter an AMI Id. The default value is Windows Server 2019 Core:
+      /aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base.'
+  InstanceTypeParameter:
+    Type: String
+    Default: t3.2xlarge
+    AllowedValues:
+      - t2.2xlarge
+      - t3.2xlarge
+      - m5.large
+      - c5.large
+    Description: Select an instance type. The default instance type is t3.2xlarge.
+  LaunchTemplateSecurityGroupParameter:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: Select EC2 security group to assign to the launch template.
+  VpcIdParameter:
+    Type: List<AWS::EC2::VPC::Id>
+    Description: List of Virtual Private Cloud (VPC) Ids in your account.
+  ELBSchemeParameter:
+    Type: String
+    Default: internet-facing
+    AllowedValues:
+      - internet-facing
+      - internal
+    Description: Select whether the ELB is internet-facing (public) or internal (private).
+  ELBSubnetParameter:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Select EC2 subnets to assign to the ELB.
+  ELBSecurityGroupParameter:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: Select EC2 security group to assign to the ELB.
+  ASGMinSizeParameter:
+    Type: Number
+    Description: Minimum instance size for the Auto Scaling Group.
+  ASGMaxSizeParameter:
+    Type: Number
+    Description: Maximum instance size for the Auto Scaling Group.
+  ASGDesiredCapacityParameter:
+    Type: Number
+    Description: Desired capacity instance size for the Auto Scaling Group.
+  ASGSubnetParameter:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Select EC2 subnets to assign to the Auto Scaling Group.
+  ExecutionResourceArn:
+    Description: "The IAM Role ARN that will be used for Event Bridge to execute SSM Automation."
+    Type: String
+  SetupConfigurationDocName:
+    Type: String
+    Description: Document name of AWS Systems Manager Automation Document for Setup Config.
+  RemoveConfigurationDocName:
+    Type: String
+    Description: Document name of AWS Systems Manager Automation Document for Removal Config.
+  SSMInstanceProfileName:
+    Type: String
+    Description: Instance profile name needed for AWS Systems Manager.
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Launch Template Configuration
+        Parameters:
+          - ImageIdParameter
+          - InstanceTypeParameter
+          - LaunchTemplateSecurityGroupParameter
+      - Label:
+          default: Elastic Load Balancer Configuration
+        Parameters:
+          - VpcIdParameter
+          - ELBSchemeParameter
+          - ELBSubnetParameter
+          - ELBSecurityGroupParameter
+      - Label:
+          default: Amazon EC2 Auto Scaling Configuration
+        Parameters:
+          - ASGDesiredCapacityParameter
+          - ASGMinSizeParameter
+          - ASGMaxSizeParameter
+          - ASGSubnetParameter
+    ParameterLabels:
+      ImageIdParameter:
+        default: Amazon Machine Image (AMI) Id
+      InstanceTypeParameter:
+        default: Instance Type
+      LaunchTemplateSecurityGroupParameter:
+        default: Security Group
+      VpcIdParameter:
+        default: Vpc Id
+      ELBSchemeParameter:
+        default: ELB Scheme
+      ELBSecurityGroupParameter:
+        default: Security Group
+      ELBSubnetParameter:
+        default: VPC Subnets
+      ASGSubnetParameter:
+        default: VPC Subnets
+      ASGMinSizeParameter:
+        default: Minimum Size
+      ASGMaxSizeParameter:
+        default: Maximum Size
+      ASGDesiredCapacityParameter:
+        default: Desired Capacity
+Resources:
+  EC2LaunchTemplateResource:
+    Type: AWS::EC2::LaunchTemplate
+    DeletionPolicy: Delete
+    Properties:
+      LaunchTemplateData:
+        InstanceType: !Ref 'InstanceTypeParameter'
+        ImageId: !Ref 'ImageIdParameter'
+        SecurityGroupIds:
+          - !Select
+            - '0'
+            - !Ref 'LaunchTemplateSecurityGroupParameter'
+        IamInstanceProfile:
+          Name: !Ref 'SSMInstanceProfileName'
+        TagSpecifications:
+           - 
+            ResourceType: 'instance'
+            Tags:
+              - Key: "DomainToJoin"
+                Value: !Ref "DomainDNSName"
+#  ALBResource:
+#    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+#    Properties:
+#      Scheme: !Ref 'ELBSchemeParameter'
+#      Subnets:
+#        - !Select
+#          - '0'
+#          - !Ref 'ELBSubnetParameter'
+#        - !Select
+#          - '1'
+#          - !Ref 'ELBSubnetParameter'
+#      SecurityGroups:
+#        - !Select
+#          - '0'
+#          - !Ref 'ELBSecurityGroupParameter'
+#  ALBTargetGroupResource:
+#    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+#    Properties:
+#      Port: 80
+#      Protocol: HTTP
+#      VpcId: !Select
+#        - '0'
+#        - !Ref 'VpcIdParameter'
+#      HealthyThresholdCount: 5
+#      HealthCheckTimeoutSeconds: 120
+#      HealthCheckIntervalSeconds: 300
+#      UnhealthyThresholdCount: 10
+#      TargetGroupAttributes:
+#        - Key: deregistration_delay.timeout_seconds
+#          Value: '60'
+#  ALBListenerResource:
+#    Type: AWS::ElasticLoadBalancingV2::Listener
+#    Properties:
+#      LoadBalancerArn: !Ref 'ALBResource'
+#      Port: 80
+#      Protocol: HTTP
+#      DefaultActions:
+#        - Type: forward
+#          TargetGroupArn: !Ref 'ALBTargetGroupResource'
+  ASGResource:
+    DependsOn: ScaleUpEventBridgeResource
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub "${AWS::StackName}"
+      MinSize: !Ref 'ASGMinSizeParameter'
+      MaxSize: !Ref 'ASGMaxSizeParameter'
+      DesiredCapacity: !Ref 'ASGDesiredCapacityParameter'
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 60
+      Cooldown: '30'
+      LaunchTemplate:
+        LaunchTemplateId: !Ref 'EC2LaunchTemplateResource'
+        Version: !GetAtt 'EC2LaunchTemplateResource.LatestVersionNumber'
+      VPCZoneIdentifier:
+        - !Select
+          - '0'
+          - !Ref 'ASGSubnetParameter'
+        - !Select
+          - '1'
+          - !Ref 'ASGSubnetParameter'
+      #TargetGroupARNs:
+      #  - !Ref 'ALBTargetGroupResource'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+          LifecycleHookName: DomainJoinHook
+          HeartbeatTimeout: 600
+          DefaultResult: ABANDON
+        - LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+          LifecycleHookName: DomainUnjoinHook
+          HeartbeatTimeout: 300
+          DefaultResult: ABANDON
+  EventBridgeSSMAutoRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+                - ssm:StartAutomationExecution
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
+            - Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource:
+                - !Ref 'ExecutionResourceArn'
+              Condition: {"StringLikeIfExists": {"iam:PassedToService": "ssm.amazonaws.com"}}
+          PolicyName: !Sub "EventBridge_Invoke_SSM_Automation_${AWS::StackName}"
+      Path: /service-role/
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+  ScaleUpEventBridgeResource:
+    Type: AWS::Events::Rule
+    Properties:
+      State: ENABLED
+      Description: Run Configuration Document that Joins Domain and Configures IIS.
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - EC2 Instance-launch Lifecycle Action
+        detail:
+          AutoScalingGroupName:
+            - !Sub "${AWS::StackName}"
+      Targets:
+        - Arn: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
+          Id: Windows-Scale-Out
+          RoleArn: !GetAtt EventBridgeSSMAutoRole.Arn
+          InputTransformer:
+            InputPathsMap:
+              ASGName: $.detail.AutoScalingGroupName
+              InstanceId: $.detail.EC2InstanceId
+              LCHName: $.detail.LifecycleHookName
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+  ScaleDownEventBridgeResource:
+    Type: AWS::Events::Rule
+    Properties:
+      State: ENABLED
+      Description: Run Removal Document that Un-joins Domain.
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - EC2 Instance-terminate Lifecycle Action
+        detail:
+          AutoScalingGroupName:
+            - !Sub "${AWS::StackName}"
+      Targets:
+        - Arn: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
+          Id: Windows-Scale-In
+          RoleArn: !GetAtt EventBridgeSSMAutoRole.Arn
+          InputTransformer:
+            InputPathsMap:
+              ASGName: $.detail.AutoScalingGroupName
+              InstanceId: $.detail.EC2InstanceId
+              LCHName: $.detail.LifecycleHookName
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+Outputs:
+#  ELBUrl:
+#    Description: DNS name of the ELB.
+#    Value: !GetAtt 'ALBResource.DNSName'
+  LaunchTemplateId:
+    Description: Launch template Id
+    Value: !Ref 'EC2LaunchTemplateResource'
+    Export:
+      Name: !Sub '${AWS::StackName}-LaunchTemplateId'
