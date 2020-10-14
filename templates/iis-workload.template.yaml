@@ -19,24 +19,15 @@ Metadata:
       - Label:
           default: Amazon EC2 Configuration for IIS Servers
         Parameters:
-          - KeyPairName
           - IISServerInstanceType
       - Label:
           default: Network Configuration
         Parameters:
-          - AvailabilityZones
-          - VPCCIDR
           - VPCID
           - PrivateSubnet1ID
           - PrivateSubnet2ID
           - PublicSubnet1ID
           - PublicSubnet2ID
-      - Label:
-          default: Remote Desktop Gateway Configuration
-        Parameters:
-          - RDGWCIDR
-          - NumberOfRDGWHosts
-          - RDGWInstanceType
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
@@ -44,10 +35,6 @@ Metadata:
           - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
-      AvailabilityZones:
-        default: Availability Zones
-      AvailabiltyGroupName:
-        default: Availability group name
       DomainAdminPassword:
         default: Domain admin password
       DomainAdminUser:
@@ -56,34 +43,12 @@ Metadata:
         default: Domain DNS name
       DomainNetBIOSName:
         default: Domain NetBIOS name
-      KeyPairName:
-        default: Key pair name
-      NumberOfRDGWHosts:
-        default: Number of RDGW hosts
-      PrivateSubnet1CIDR:
-        default: Private subnet 1 CIDR
-      PrivateSubnet2CIDR:
-        default: Private subnet 2 CIDR
-      PrivateSubnet3CIDR:
-        default: Private subnet 3 CIDR
-      PublicSubnet1CIDR:
-        default: Public subnet 1 CIDR
-      PublicSubnet2CIDR:
-        default: Public subnet 2 CIDR
-      PublicSubnet3CIDR:
-        default: Public subnet 3 CIDR
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3BucketRegion:
         default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-      RDGWInstanceType:
-        default: RDGW instance type
-      RDGWCIDR:
-        default: Allowed RDGW external access CIDR
-      VPCCIDR:
-        default: VPC CIDR
 Parameters:
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
@@ -142,6 +107,7 @@ Parameters:
     AllowedValues:
       - t2.large
       - t3.large
+      - t3.2xlarge
       - m4.large
       - m4.xlarge
       - m4.2xlarge
@@ -150,11 +116,11 @@ Parameters:
       - m5.xlarge
       - m5.2xlarge
       - m5.4xlarge
-    Default: m5.xlarge
+    Default: t3.2xlarge
     Description: Amazon EC2 instance type for the second Active Directory instance
     Type: String
   DomainMemberSecurityGroup:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: AWS::EC2::SecurityGroup::Id
     Description: Select EC2 security group that allows for Active Directory communication.
   PublicSubnet1ID:
     Description: ID of the public subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
@@ -171,19 +137,13 @@ Parameters:
   VPCID:
     Description: ID of the VPC (e.g., vpc-0343606e)
     Type: AWS::EC2::VPC::Id
-  #ELBSchemeParameter:
-  #  Type: String
-  #  Default: internet-facing
-  #  AllowedValues:
-  #    - internet-facing
-  #    - internal
-  #  Description: Select whether the ELB is internet-facing (public) or internal (private).
-  #ELBSubnetParameter:
-  #  Type: List<AWS::EC2::Subnet::Id>
-  #  Description: Select EC2 subnets to assign to the ELB.
-  #ELBSecurityGroupParameter:
-  #  Type: List<AWS::EC2::SecurityGroup::Id>
-  #  Description: Select EC2 security group to assign to the ELB.
+  ELBSchemeParameter:
+    Type: String
+    Default: internet-facing
+    AllowedValues:
+      - internet-facing
+      - internal
+    Description: Select whether the ELB is internet-facing (public) or internal (private).
   ASGMinSize:
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
@@ -193,9 +153,6 @@ Parameters:
   ASGDesiredCapacity:
     Type: Number
     Description: Desired capacity instance size for the Auto Scaling Group.
-  ASGSubnet:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: Select EC2 subnets to assign to the Auto Scaling Group.
 Resources:
   ConfigBucket:
     Type: AWS::S3::Bucket
@@ -215,14 +172,14 @@ Resources:
   IAMStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}iam-roles.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/iam-roles.template.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
   AutomationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}automation-parts.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/automation-parts.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
@@ -230,19 +187,25 @@ Resources:
   WebAutoScaleStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}asg-lifecyclehooks.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/asg-lch.template.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         IISServerInstanceType: !Ref 'IISServerInstanceType'
         DomainMemberSecurityGroup: !Ref 'DomainMemberSecurityGroup'
-        VpcId: !Ref 'VpcId'
-        ASGDesiredCapacity: !Ref 'ASGDesiredCapacity:'
+        DomainDNSName: !Ref 'DomainDNSName'
+        VPCID: !Ref 'VPCID'
+        ELBSubnet1ID: !Ref 'PublicSubnet1ID'
+        ELBSubnet2ID: !Ref 'PublicSubnet2ID'
+        ELBSchemeParameter: !Ref 'ELBSchemeParameter'
+        ASGDesiredCapacity: !Ref 'ASGDesiredCapacity'
         ASGMinSize: !Ref 'ASGMinSize'
         ASGMaxSize: !Ref 'ASGMaxSize'
+        WorkloadSubnet1ID: !Ref 'PrivateSubnet1ID'
+        WorkloadSubnet2ID: !Ref 'PrivateSubnet2ID'
         ExecutionResourceArn: !GetAtt 'IAMStack.Outputs.ExecutionResourceArn'
         SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
         RemoveConfigurationDocName: !GetAtt 'AutomationStack.Outputs.RemoveConfigurationDocName'
-        SSMInstanceProfileName: !GetAtt 'IAMStack.Outputs.ExecutionResourceArn'
+        SSMInstanceProfileName: !GetAtt 'IAMStack.Outputs.SSMInstanceProfileName'
 Outputs:
   ConfigBucket:
     Value: !Ref ConfigBucket

@@ -2,6 +2,52 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Launch a scalable IIS environment based on a launch template, Application
   Load Balancer and Auto Scaling Group. Scaling handled by Lifecycle Hooks, EventBridge,
   and .NET Core 3.1 Lambda function.
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Launch Template Configuration
+        Parameters:
+          - ImageId
+          - IISServerInstanceType
+     #     - LaunchTemplateSecurityGroupParameter
+     # - Label:
+     #     default: Elastic Load Balancer Configuration
+     #   Parameters:
+     #     - VPCID
+     #     - ELBSchemeParameter
+     #     - ELBSubnetParameter
+     #     - ELBSecurityGroupParameter
+      - Label:
+          default: Amazon EC2 Auto Scaling Configuration
+        Parameters:
+          - ASGDesiredCapacity
+          - ASGMinSize
+          - ASGMaxSize
+          - WorkloadSubnet1ID
+    ParameterLabels:
+      ImageId:
+        default: Amazon Machine Image (AMI) Id
+      IISServerInstanceType:
+        default: Instance Type
+    #  LaunchTemplateSecurityGroupParameter:
+    #    default: Security Group
+    #  VPCID:
+    #    default: Vpc Id
+    #  ELBSchemeParameter:
+    #    default: ELB Scheme
+    #  ELBSecurityGroupParameter:
+    #    default: Security Group
+    #  ELBSubnetParameter:
+    #    default: VPC Subnets
+      WorkloadSubnet1ID:
+        default: VPC Subnets
+      ASGMinSize:
+        default: Minimum Size
+      ASGMaxSize:
+        default: Maximum Size
+      ASGDesiredCapacity:
+        default: Desired Capacity
 Parameters:
   ConfigBucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -19,7 +65,7 @@ Parameters:
     MaxLength: '255'
     MinLength: '2'
     Type: String
-  ImageIdParameter:
+  ImageId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base
     Description: 'Enter an AMI Id. The default value is Windows Server 2019 Core:
@@ -41,36 +87,39 @@ Parameters:
     Description: Amazon EC2 instance type for the Internet Information Services servers
     Type: String
   DomainMemberSecurityGroup:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: AWS::EC2::SecurityGroup::Id
     Description: Select EC2 security group to assign to the launch template.
-#  VPCID:
-#    Type: List<AWS::EC2::VPC::Id>
-#    Description: List of Virtual Private Cloud (VPC) Ids in your account.
-#  ELBSchemeParameter:
-#    Type: String
-#    Default: internet-facing
-#    AllowedValues:
-#      - internet-facing
-#      - internal
-#    Description: Select whether the ELB is internet-facing (public) or internal (private).
-#  ELBSubnetParameter:
-#    Type: List<AWS::EC2::Subnet::Id>
-#    Description: Select EC2 subnets to assign to the ELB.
-#  ELBSecurityGroupParameter:
-#    Type: List<AWS::EC2::SecurityGroup::Id>
-#    Description: Select EC2 security group to assign to the ELB.
-  ASGMinSizeParameter:
+  VPCID:
+    Type: AWS::EC2::VPC::Id
+    Description: List of Virtual Private Cloud (VPC) Ids in your account.
+  ELBSchemeParameter:
+    Type: String
+    Default: internet-facing
+    AllowedValues:
+      - internet-facing
+      - internal
+    Description: Select whether the ELB is internet-facing (public) or internal (private).
+  ASGMinSize:
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
-  ASGMaxSizeParameter:
+  ASGMaxSize:
     Type: Number
     Description: Maximum instance size for the Auto Scaling Group.
-  ASGDesiredCapacityParameter:
+  ASGDesiredCapacity:
     Type: Number
     Description: Desired capacity instance size for the Auto Scaling Group.
-  ASGSubnetParameter:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: Select EC2 subnets to assign to the Auto Scaling Group.
+  ELBSubnet1ID:
+    Description: ID of the ELB subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  ELBSubnet2ID:
+    Description: ID of the ELB subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  WorkloadSubnet1ID:
+    Description: ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  WorkloadSubnet2ID:
+    Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
   ExecutionResourceArn:
     Description: "The IAM Role ARN that will be used for Event Bridge to execute SSM Automation."
     Type: String
@@ -83,52 +132,6 @@ Parameters:
   SSMInstanceProfileName:
     Type: String
     Description: Instance profile name needed for AWS Systems Manager.
-Metadata:
-  AWS::CloudFormation::Interface:
-    ParameterGroups:
-      - Label:
-          default: Launch Template Configuration
-        Parameters:
-          - ImageIdParameter
-          - IISServerInstanceType
-     #     - LaunchTemplateSecurityGroupParameter
-     # - Label:
-     #     default: Elastic Load Balancer Configuration
-     #   Parameters:
-     #     - VPCID
-     #     - ELBSchemeParameter
-     #     - ELBSubnetParameter
-     #     - ELBSecurityGroupParameter
-      - Label:
-          default: Amazon EC2 Auto Scaling Configuration
-        Parameters:
-          - ASGDesiredCapacityParameter
-          - ASGMinSizeParameter
-          - ASGMaxSizeParameter
-          - ASGSubnetParameter
-    ParameterLabels:
-      ImageIdParameter:
-        default: Amazon Machine Image (AMI) Id
-      IISServerInstanceType:
-        default: Instance Type
-    #  LaunchTemplateSecurityGroupParameter:
-    #    default: Security Group
-    #  VPCID:
-    #    default: Vpc Id
-    #  ELBSchemeParameter:
-    #    default: ELB Scheme
-    #  ELBSecurityGroupParameter:
-    #    default: Security Group
-    #  ELBSubnetParameter:
-    #    default: VPC Subnets
-      ASGSubnetParameter:
-        default: VPC Subnets
-      ASGMinSizeParameter:
-        default: Minimum Size
-      ASGMaxSizeParameter:
-        default: Maximum Size
-      ASGDesiredCapacityParameter:
-        default: Desired Capacity
 Resources:
   EC2LaunchTemplateResource:
     Type: AWS::EC2::LaunchTemplate
@@ -136,11 +139,9 @@ Resources:
     Properties:
       LaunchTemplateData:
         InstanceType: !Ref 'IISServerInstanceType'
-        ImageId: !Ref 'ImageIdParameter'
+        ImageId: !Ref 'ImageId'
         SecurityGroupIds:
-          - !Select
-            - '0'
-            - !Ref 'DomainMemberSecurityGroup'
+          - !Ref 'DomainMemberSecurityGroup'
         IamInstanceProfile:
           Name: !Ref 'SSMInstanceProfileName'
         TagSpecifications:
@@ -149,53 +150,45 @@ Resources:
             Tags:
               - Key: "DomainToJoin"
                 Value: !Ref "DomainDNSName"
-#  ALBResource:
-#    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-#    Properties:
-#      Scheme: !Ref 'ELBSchemeParameter'
-#      Subnets:
-#        - !Select
-#          - '0'
-#          - !Ref 'ELBSubnetParameter'
-#        - !Select
-#          - '1'
-#          - !Ref 'ELBSubnetParameter'
-#      SecurityGroups:
-#        - !Select
-#          - '0'
-#          - !Ref 'ELBSecurityGroupParameter'
-#  ALBTargetGroupResource:
-#    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-#    Properties:
-#      Port: 80
-#      Protocol: HTTP
-#      VpcId: !Select
-#        - '0'
-#        - !Ref 'VPCID'
-#      HealthyThresholdCount: 5
-#      HealthCheckTimeoutSeconds: 120
-#      HealthCheckIntervalSeconds: 300
-#      UnhealthyThresholdCount: 10
-#      TargetGroupAttributes:
-#        - Key: deregistration_delay.timeout_seconds
-#          Value: '60'
-#  ALBListenerResource:
-#    Type: AWS::ElasticLoadBalancingV2::Listener
-#    Properties:
-#      LoadBalancerArn: !Ref 'ALBResource'
-#      Port: 80
-#      Protocol: HTTP
-#      DefaultActions:
-#        - Type: forward
-#          TargetGroupArn: !Ref 'ALBTargetGroupResource'
+  ALBResource:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: !Ref 'ELBSchemeParameter'
+      Subnets:
+        - !Ref 'ELBSubnet1ID'
+        - !Ref 'ELBSubnet2ID'
+      SecurityGroups:
+        - !Ref 'DomainMemberSecurityGroup'
+  ALBTargetGroupResource:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref 'VPCID'
+      HealthyThresholdCount: 5
+      HealthCheckTimeoutSeconds: 120
+      HealthCheckIntervalSeconds: 300
+      UnhealthyThresholdCount: 10
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '60'
+  ALBListenerResource:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref 'ALBResource'
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref 'ALBTargetGroupResource'
   ASGResource:
     DependsOn: ScaleUpEventBridgeResource
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AutoScalingGroupName: !Sub "${AWS::StackName}"
-      MinSize: !Ref 'ASGMinSizeParameter'
-      MaxSize: !Ref 'ASGMaxSizeParameter'
-      DesiredCapacity: !Ref 'ASGDesiredCapacityParameter'
+      MinSize: !Ref 'ASGMinSize'
+      MaxSize: !Ref 'ASGMaxSize'
+      DesiredCapacity: !Ref 'ASGDesiredCapacity'
       HealthCheckType: EC2
       HealthCheckGracePeriod: 60
       Cooldown: '30'
@@ -203,12 +196,8 @@ Resources:
         LaunchTemplateId: !Ref 'EC2LaunchTemplateResource'
         Version: !GetAtt 'EC2LaunchTemplateResource.LatestVersionNumber'
       VPCZoneIdentifier:
-        - !Select
-          - '0'
-          - !Ref 'ASGSubnetParameter'
-        - !Select
-          - '1'
-          - !Ref 'ASGSubnetParameter'
+        - !Ref 'WorkloadSubnet1ID'
+        - !Ref 'WorkloadSubnet2ID'
       #TargetGroupARNs:
       #  - !Ref 'ALBTargetGroupResource'
       LifecycleHookSpecificationList:
