@@ -258,7 +258,7 @@ Resources:
           InputTransformer:
             InputPathsMap:
               ASGName: $.detail.AutoScalingGroupName
-              InstanceId: $.detail.EC2InstanceId
+              LCHToken: $.detail.LifecycleActionToken
               LCHName: $.detail.LifecycleHookName
             InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
   ScaleDownEventBridgeResource:
@@ -281,9 +281,9 @@ Resources:
           InputTransformer:
             InputPathsMap:
               ASGName: $.detail.AutoScalingGroupName
-              InstanceId: $.detail.EC2InstanceId
+              LCHToken: $.detail.LifecycleActionToken
               LCHName: $.detail.LifecycleHookName
-            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"LCHToken":[<LCHToken>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
 Outputs:
 #  ELBUrl:
 #    Description: DNS name of the ELB.
