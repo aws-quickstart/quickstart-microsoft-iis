@@ -261,6 +261,9 @@ Resources:
         description: "Configure Instances on Launch"
         assumeRole: "{{AutomationAssumeRole}}"
         parameters:
+          InstanceId:
+            description: "ID of the Instance."
+            type: "StringList" 
           ASGName:
             description: "Auto Scaling Group Name"
             type: "String"
@@ -442,6 +445,9 @@ Resources:
         description: "Remove EC2 Instances from AD Domain"
         assumeRole: "{{AutomationAssumeRole}}"
         parameters:
+          InstanceId:
+            description: "ID of the Instance."
+            type: "StringList" 
           ASGName:
             description: "Auto Scaling Group Name"
             type: "String"

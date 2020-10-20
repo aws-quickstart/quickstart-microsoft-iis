@@ -257,10 +257,11 @@ Resources:
           RoleArn: !GetAtt EventBridgeSSMAutoRole.Arn
           InputTransformer:
             InputPathsMap:
+              InstanceId: $.detail.EC2InstanceId
               ASGName: $.detail.AutoScalingGroupName
               LCHToken: $.detail.LifecycleActionToken
               LCHName: $.detail.LifecycleHookName
-            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHToken":[<LCHToken>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
   ScaleDownEventBridgeResource:
     Type: AWS::Events::Rule
     Properties:
@@ -280,10 +281,11 @@ Resources:
           RoleArn: !GetAtt EventBridgeSSMAutoRole.Arn
           InputTransformer:
             InputPathsMap:
+              InstanceId: $.detail.EC2InstanceId
               ASGName: $.detail.AutoScalingGroupName
               LCHToken: $.detail.LifecycleActionToken
               LCHName: $.detail.LifecycleHookName
-            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"LCHToken":[<LCHToken>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHToken":[<LCHToken>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
 Outputs:
 #  ELBUrl:
 #    Description: DNS name of the ELB.
