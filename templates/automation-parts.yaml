@@ -252,6 +252,69 @@ Resources:
             <div><a href="https://aws.amazon.com/what-is-cloud-computing"><img src="https://d0.awsstatic.com/logos/powered-by-aws.png" alt="Powered by AWS Cloud Computing"></a></div>
           </body>
         </html>
+  CloudWatchParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub 'AmazonCloudWatch-Windows-${AWS::StackName}'
+      Type: String
+      Value: |
+        {
+        	"logs": {
+        		"logs_collected": {
+        			"files": {
+        				"collect_list": [
+        					{
+        						"file_path": "C:\\inetpub\\logs\\LogFiles\\W3SVC1\\*.log",
+        						"log_group_name": "IISLogs",
+        						"log_stream_name": "{instance_id}"
+        					}
+        				]
+        			},
+        			"windows_events": {
+        				"collect_list": [
+        					{
+        						"event_format": "xml",
+        						"event_levels": [
+        							"VERBOSE",
+        							"INFORMATION",
+        							"WARNING",
+        							"ERROR",
+        							"CRITICAL"
+        						],
+        						"event_name": "System",
+        						"log_group_name": "System",
+        						"log_stream_name": "{instance_id}"
+        					}
+        				]
+        			}
+        		}
+        	},
+        	"metrics": {
+        		"metrics_collected": {
+        			"LogicalDisk": {
+        				"measurement": [
+        					"% Free Space"
+        				],
+        				"metrics_collection_interval": 60,
+        				"resources": [
+        					"*"
+        				]
+        			},
+        			"Memory": {
+        				"measurement": [
+        					"% Committed Bytes In Use"
+        				],
+        				"metrics_collection_interval": 60
+        			},
+        			"statsd": {
+        				"metrics_aggregation_interval": 60,
+        				"metrics_collection_interval": 10,
+        				"service_address": ":8125"
+        			}
+        		}
+        	}
+        }
+      Description: SSM Parameter for CloudWatch Configuration.
   SetupConfigurationDoc:
     Type: AWS::SSM::Document
     Properties:
@@ -353,7 +416,7 @@ Resources:
                 mode:
                   - 'ec2'
                 optionalConfigurationLocation:
-                  - 'AmazonCloudWatch-windows'
+                  - !Ref 'CloudWatchParam'
                 optionalConfigurationSource:
                   - 'ssm'
                 optionalRestart:
