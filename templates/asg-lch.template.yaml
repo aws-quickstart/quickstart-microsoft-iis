@@ -203,11 +203,9 @@ Resources:
       LifecycleHookSpecificationList:
         - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
           LifecycleHookName: DomainJoinHook
-          HeartbeatTimeout: 600
           DefaultResult: ABANDON
         - LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
           LifecycleHookName: DomainUnjoinHook
-          HeartbeatTimeout: 300
           DefaultResult: ABANDON
   EventBridgeSSMAutoRole:
     Type: AWS::IAM::Role
