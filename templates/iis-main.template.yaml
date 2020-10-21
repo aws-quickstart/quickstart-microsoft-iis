@@ -23,7 +23,6 @@ Metadata:
       - Label:
           default: Self-Managed Active Directory Configuration (Optional if AWS Scenario is AD on EC2)
         Parameters:
-          - ADConnectorSize
           - ADServer1InstanceType
           - ADServer1NetBIOSName
           - ADServer1PrivateIP
@@ -38,6 +37,7 @@ Metadata:
           default: Network Configuration
         Parameters:
           - AvailabilityZones
+          - AvailabiltyGroupName
           - VPCCIDR
           - NumberOfAZs
           - PublicSubnet1CIDR
@@ -47,16 +47,13 @@ Metadata:
           - PrivateSubnet2CIDR
           - PrivateSubnet3CIDR
       - Label:
-          default: Remote Desktop Gateway Configuration
+          default: Autoscaling Group / Application Load Balancer Configuration
         Parameters:
-          - RDGWCIDR
-          - NumberOfRDGWHosts
-          - RDGWInstanceType
-      - Label:
-          default: Workspaces AD Registration Configuration 
-        Parameters:
-          - SelfServiceEnabled
-          - WorkspaceTenancy
+          - ASGDesiredCapacity
+          - ASGMaxSize
+          - ASGMinSize
+          - ELBSchemeParameter
+          - IISServerInstanceType
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
@@ -64,8 +61,6 @@ Metadata:
           - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
-      ADConnectorSize:
-        default: AD connector size
       ADScenarioType:
         default: AD scenario type
       ADServer1InstanceType:
@@ -80,6 +75,12 @@ Metadata:
         default: Domain controller 2 NetBIOS name
       ADServer2PrivateIP:
         default: Domain controller 2 private IP address
+      ASGDesiredCapacity:
+        default: Autoscaling group desired capacity
+      ASGMaxSize:
+        default: Autoscaling group max size
+      ASGMinSize:
+        default: Autoscaling group min size
       AvailabilityZones:
         default: Availability Zones
       AvailabiltyGroupName:
@@ -92,12 +93,14 @@ Metadata:
         default: Domain DNS name
       DomainNetBIOSName:
         default: Domain NetBIOS name
+      ELBSchemeParameter:
+        default: ELB Scheme
+      IISServerInstanceType:
+        default: Instance type for IIS Servers
       KeyPairName:
         default: Key pair name
       NumberOfAZs:
         default: Number of Availability Zones
-      NumberOfRDGWHosts:
-        default: Number of RDGW hosts
       PrivateSubnet1CIDR:
         default: Private subnet 1 CIDR
       PrivateSubnet2CIDR:
@@ -116,29 +119,9 @@ Metadata:
         default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-      RDGWInstanceType:
-        default: RDGW instance type
-      RDGWCIDR:
-        default: Allowed RDGW external access CIDR
-      SelfServiceEnabled:
-        default: Enable Self Service
       VPCCIDR:
         default: VPC CIDR
-      WorkspaceTenancy:
-        default: WorkSpaces Tenancy
 Parameters:
-  ADConnectorSize:
-    AllowedValues:
-      - 'Small'
-      - 'Large'
-    Description: (Only used if ADScenarioType is Microsoft AD on Amazon EC2) AD Connector is a proxy for redirecting directory requests to 
-       your existing Microsoft Active Directory without caching any information in the cloud. AD Connector comes in two sizes, small and large.
-       A small AD Connector is designed for smaller organizations of up to 500 users. A large AD Connector can support larger organizations of 
-       up to 5,000 users. If you are using AWS Managed AD, this is not needed.
-       If you're doing an UPDATE to the size on this cfn, please be aware the current connector will be deleted and a new one will be created. 
-       Failure to delete current one may occur if dependencies have not been removed from the directory.
-    Default: 'Small' 
-    Type: String
   ADScenarioType:
     AllowedValues:
       - AWS Directory Service for Microsoft AD (Enterprise Edition)
@@ -201,6 +184,15 @@ Parameters:
     Description: Fixed private IP for the second Active Directory server located in
       Availability Zone 2.
     Type: String
+  ASGMinSize:
+    Type: Number
+    Description: Minimum instance size for the Auto Scaling Group.
+  ASGMaxSize:
+    Type: Number
+    Description: Maximum instance size for the Auto Scaling Group.
+  ASGDesiredCapacity:
+    Type: Number
+    Description: Desired capacity instance size for the Auto Scaling Group.
   AvailabilityZones:
     Description: >-
       List of Availability Zones to use for the subnets in the VPC. Note: The logical
@@ -242,19 +234,33 @@ Parameters:
     MaxLength: '15'
     MinLength: '1'
     Type: String
+  ELBSchemeParameter:
+    Type: String
+    Default: internet-facing
+    AllowedValues:
+      - internet-facing
+      - internal
+    Description: Select whether the ELB is internet-facing (public) or internal (private).
+  IISServerInstanceType:
+    AllowedValues:
+      - t2.large
+      - t3.large
+      - t3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: t3.2xlarge
+    Description: Amazon EC2 instance type for the second Active Directory instance
+    Type: String
   KeyPairName:
     Description: Public/private key pairs allow you to securely connect to your instance
       after it launches.
     Type: AWS::EC2::KeyPair::KeyName
-  NumberOfRDGWHosts:
-    AllowedValues:
-      - '1'
-      - '2'
-      - '3'
-      - '4'
-    Default: '1'
-    Description: Enter the number of Remote Desktop Gateway hosts to create.
-    Type: String
   NumberOfAZs:
     AllowedValues:
       - '2'
@@ -313,35 +319,10 @@ Parameters:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
     ConstraintDescription: Can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slash (/).
-    Default: quickstart-aws-workspaces/
+    Default: quickstart-microsoft-iis/
     Description: S3 key prefix for the Quick Start assets. This prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
-    Type: String
-  RDGWInstanceType:
-    AllowedValues:
-      - t2.small
-      - t2.medium
-      - t2.large
-      - m5.large
-      - m5.xlarge
-      - m5.2xlarge
-      - m5.4xlarge
-    Default: t2.large
-    Description: Amazon EC2 instance type for the Remote Desktop Gateway instances.
-    Type: String
-  RDGWCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
-    Description: Allowed CIDR block for external access to the Remote Desktop Gateway instances.
-    Type: String
-  SelfServiceEnabled:
-    AllowedValues:
-      - 'True'
-      - 'False'
-    Default: 'False'
-    Description: Select whether you will allow users to have self-service capabilities such as restarting their WorkSpace. See
-        Amazon WorkSpaces documentation for more details.  
     Type: String
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
@@ -349,19 +330,14 @@ Parameters:
     Default: 10.0.0.0/16
     Description: CIDR block for the VPC.
     Type: String
-  WorkspaceTenancy:
-    AllowedValues:
-      - 'SHARED'
-      - 'DEDICATED'
-    Default: 'SHARED'
-    Description: Select whether you will be using dedicated tenancy or shared tenancy for Amazon Workspaces. If you plan on using
-      Bring Your Own License (BYOL) then you will need to select dedicated. 
-    Type: String
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   UseAWSDirectoryServiceEE: !Equals
     - !Ref 'ADScenarioType'
     - AWS Directory Service for Microsoft AD (Enterprise Edition)
+  UseELBPublicSubnets: !Equals
+    - !Ref 'ELBSchemeParameter'
+    - internet-facing
   3AZCondition: !Equals 
       - !Ref NumberOfAZs
       - '3'
@@ -452,3 +428,58 @@ Resources:
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
           VPCCIDR: !Ref 'VPCCIDR'
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
+  IISStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub:
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/iis-workload.yaml'
+          - S3Region: !If
+              - UsingDefaultBucket
+              - !Ref AWS::Region
+              - !Ref QSS3BucketRegion
+            S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub '${QSS3BucketName}-${AWS::Region}'
+              - !Ref QSS3BucketName
+      Parameters: !If
+        - UseELBPublicSubnets
+        - ASGDesiredCapacity: !Ref ASGDesiredCapacity
+          ASGMaxSize: !Ref ASGMaxSize
+          ASGMinSize: !Ref ASGMinSize
+          DomainAdminPassword: !Ref 'DomainAdminPassword'
+          DomainAdminUser: !Ref 'DomainAdminUser'
+          DomainDNSName: !Ref 'DomainDNSName'
+          DomainMemberSecurityGroup: !GetAtt 'ADStack.Outputs.DomainMemberSGID'
+          DomainNetBIOSName: !Ref 'DomainNetBIOSName'
+          ELBSchemeParameter: !Ref ELBSchemeParameter
+          IISServerInstanceType: !Ref IISServerInstanceType
+          PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
+          PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
+          ELBSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID
+          ELBSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID
+          VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
+          QSS3BucketName: !Ref 'QSS3BucketName'
+          QSS3BucketRegion: !Ref 'QSS3BucketRegion'
+          QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}'
+        - ASGDesiredCapacity: !Ref ASGDesiredCapacity
+          ASGMaxSize: !Ref ASGMaxSize
+          ASGMinSize: !Ref ASGMinSize
+          DomainAdminPassword: !Ref 'DomainAdminPassword'
+          DomainAdminUser: !Ref 'DomainAdminUser'
+          DomainDNSName: !Ref 'DomainDNSName'
+          DomainMemberSecurityGroup: !GetAtt 'ADStack.Outputs.DomainMemberSGID'
+          DomainNetBIOSName: !Ref 'DomainNetBIOSName'
+          ELBSchemeParameter: !Ref ELBSchemeParameter
+          IISServerInstanceType: !Ref IISServerInstanceType
+          PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
+          PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
+          ELBSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
+          ELBSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
+          VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
+          QSS3BucketName: !Ref 'QSS3BucketName'
+          QSS3BucketRegion: !Ref 'QSS3BucketRegion'
+          QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}'
+
+
+

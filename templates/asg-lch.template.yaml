@@ -10,36 +10,20 @@ Metadata:
         Parameters:
           - ImageId
           - IISServerInstanceType
-     #     - LaunchTemplateSecurityGroupParameter
-     # - Label:
-     #     default: Elastic Load Balancer Configuration
-     #   Parameters:
-     #     - VPCID
-     #     - ELBSchemeParameter
-     #     - ELBSubnetParameter
-     #     - ELBSecurityGroupParameter
       - Label:
           default: Amazon EC2 Auto Scaling Configuration
         Parameters:
           - ASGDesiredCapacity
           - ASGMinSize
           - ASGMaxSize
+          - EventBridgeSSMAutoRole
           - WorkloadSubnet1ID
+          - WorkloadSubnet2ID
     ParameterLabels:
       ImageId:
         default: Amazon Machine Image (AMI) Id
       IISServerInstanceType:
         default: Instance Type
-    #  LaunchTemplateSecurityGroupParameter:
-    #    default: Security Group
-    #  VPCID:
-    #    default: Vpc Id
-    #  ELBSchemeParameter:
-    #    default: ELB Scheme
-    #  ELBSecurityGroupParameter:
-    #    default: Security Group
-    #  ELBSubnetParameter:
-    #    default: VPC Subnets
       WorkloadSubnet1ID:
         default: VPC Subnets
       ASGMinSize:
@@ -48,6 +32,12 @@ Metadata:
         default: Maximum Size
       ASGDesiredCapacity:
         default: Desired Capacity
+      EventBridgeSSMAutoRole:
+        default: EventBridge Role
+      ALBSecurityGroup:
+        Default: Security group for ALB
+      ALBListenersSecurityGroup:
+        Default: Security group for autoscaling group
 Parameters:
   ConfigBucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -132,6 +122,15 @@ Parameters:
   SSMInstanceProfileName:
     Type: String
     Description: Instance profile name needed for AWS Systems Manager.
+  EventBridgeSSMAutoRole:
+    Type: String
+    Description: EventBridge Role ARN to trigger SSM automation document
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Select security group to assign to the ALB.
+  ALBListenersSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Select security group for the launch template.
 Resources:
   EC2LaunchTemplateResource:
     Type: AWS::EC2::LaunchTemplate
@@ -142,6 +141,7 @@ Resources:
         ImageId: !Ref 'ImageId'
         SecurityGroupIds:
           - !Ref 'DomainMemberSecurityGroup'
+          - !Ref ALBListenersSecurityGroup
         IamInstanceProfile:
           Name: !Ref 'SSMInstanceProfileName'
         TagSpecifications:
@@ -158,7 +158,7 @@ Resources:
         - !Ref 'ELBSubnet1ID'
         - !Ref 'ELBSubnet2ID'
       SecurityGroups:
-        - !Ref 'DomainMemberSecurityGroup'
+        - !Ref ALBSecurityGroup
   ALBTargetGroupResource:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -198,44 +198,17 @@ Resources:
       VPCZoneIdentifier:
         - !Ref 'WorkloadSubnet1ID'
         - !Ref 'WorkloadSubnet2ID'
-      #TargetGroupARNs:
-      #  - !Ref 'ALBTargetGroupResource'
+      TargetGroupARNs:
+        - !Ref 'ALBTargetGroupResource'
       LifecycleHookSpecificationList:
         - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
           LifecycleHookName: DomainJoinHook
           DefaultResult: ABANDON
+          HeartbeatTimeout: 1000
         - LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
           LifecycleHookName: DomainUnjoinHook
           DefaultResult: ABANDON
-  EventBridgeSSMAutoRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Policies:
-        - PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-            - Effect: Allow
-              Action:
-                - ssm:StartAutomationExecution
-              Resource:
-                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
-                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
-            - Effect: Allow
-              Action:
-                - iam:PassRole
-              Resource:
-                - !Ref 'ExecutionResourceArn'
-              Condition: {"StringLikeIfExists": {"iam:PassedToService": "ssm.amazonaws.com"}}
-          PolicyName: !Sub "EventBridge_Invoke_SSM_Automation_${AWS::StackName}"
-      Path: /service-role/
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: 
-                - events.amazonaws.com
-            Action: sts:AssumeRole
+          HeartbeatTimeout: 1000
   ScaleUpEventBridgeResource:
     Type: AWS::Events::Rule
     Properties:
@@ -252,7 +225,7 @@ Resources:
       Targets:
         - Arn: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
           Id: Windows-Scale-Out
-          RoleArn: !GetAtt EventBridgeSSMAutoRole.Arn
+          RoleArn: !Ref EventBridgeSSMAutoRole
           InputTransformer:
             InputPathsMap:
               InstanceId: $.detail.EC2InstanceId
@@ -276,7 +249,7 @@ Resources:
       Targets:
         - Arn: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
           Id: Windows-Scale-In
-          RoleArn: !GetAtt EventBridgeSSMAutoRole.Arn
+          RoleArn: !Ref EventBridgeSSMAutoRole
           InputTransformer:
             InputPathsMap:
               InstanceId: $.detail.EC2InstanceId
@@ -285,9 +258,9 @@ Resources:
               LCHName: $.detail.LifecycleHookName
             InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHToken":[<LCHToken>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
 Outputs:
-#  ELBUrl:
-#    Description: DNS name of the ELB.
-#    Value: !GetAtt 'ALBResource.DNSName'
+  ELBUrl:
+    Description: DNS name of the ELB.
+    Value: !GetAtt 'ALBResource.DNSName'
   LaunchTemplateId:
     Description: Launch template Id
     Value: !Ref 'EC2LaunchTemplateResource'

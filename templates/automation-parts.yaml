@@ -243,13 +243,14 @@ Resources:
       Body: |
         <html>
           <head>
-            <title>AWS re:Invent 2020 Test Page</title>
+            <title>AWS QuickStart IIS Test Page</title>
           </head>
           <style>div {text-align: center;}</style>
           <style>h1 {text-align: center;}</style>
           <body bgcolor=white>
-            <h1>This is a Test Page to show that an IIS Server is up and ready to roll on AWS!</h1>
-            <div><a href="https://aws.amazon.com/what-is-cloud-computing"><img src="https://d0.awsstatic.com/logos/powered-by-aws.png" alt="Powered by AWS Cloud Computing"></a></div>
+          <div><a href="https://aws.amazon.com/what-is-cloud-computing"><img src="https://d0.awsstatic.com/logos/powered-by-aws.png" alt="Powered by AWS Cloud Computing"></a></div>
+          <HR>
+            <h1><p style="font-family:verdana">This is a Test Page to show that an IIS Server is up and ready to roll on AWS!</p></h1>
           </body>
         </html>
   CloudWatchParam:
@@ -326,7 +327,7 @@ Resources:
         parameters:
           InstanceId:
             description: "ID of the Instance."
-            type: "StringList" 
+            type: "String" 
           ASGName:
             description: "Auto Scaling Group Name"
             type: "String"
@@ -486,7 +487,7 @@ Resources:
               Service: autoscaling
               Api: CompleteLifecycleAction
               AutoScalingGroupName: "{{ASGName}}"
-              LifecycleActionToken: "{{LCHToken}}"
+              InstanceId: "{{InstanceId}}"
               LifecycleActionResult: CONTINUE
               LifecycleHookName: "{{LCHName}}"
           - name: "abandonHookAction"
@@ -496,7 +497,7 @@ Resources:
               Service: autoscaling
               Api: CompleteLifecycleAction
               AutoScalingGroupName: "{{ASGName}}"
-              LifecycleActionToken: "{{LCHToken}}"
+              InstanceId: "{{InstanceId}}"
               LifecycleActionResult: ABANDON
               LifecycleHookName: "{{LCHName}}"
   RemoveConfigurationDoc:
@@ -510,7 +511,7 @@ Resources:
         parameters:
           InstanceId:
             description: "ID of the Instance."
-            type: "StringList" 
+            type: "String" 
           ASGName:
             description: "Auto Scaling Group Name"
             type: "String"
@@ -564,7 +565,7 @@ Resources:
               Service: autoscaling
               Api: CompleteLifecycleAction
               AutoScalingGroupName: "{{ASGName}}"
-              LifecycleActionToken: "{{LCHToken}}"
+              InstanceId: "{{InstanceId}}"
               LifecycleActionResult: CONTINUE
               LifecycleHookName: "{{LCHName}}"
           - name: "abandonHookAction"
@@ -574,7 +575,7 @@ Resources:
               Service: autoscaling
               Api: CompleteLifecycleAction
               AutoScalingGroupName: "{{ASGName}}"
-              LifecycleActionToken: "{{LCHToken}}"
+              InstanceId: "{{InstanceId}}"
               LifecycleActionResult: ABANDON
               LifecycleHookName: "{{LCHName}}"
 Outputs:
