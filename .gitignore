@@ -1,0 +1,5 @@
+*.DS_Store*
+.taskcat_workload.yml
+taskcat_outputs/*
+.taskcat/*
+.taskcat_overrides.yml
