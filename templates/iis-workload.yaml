@@ -206,6 +206,8 @@ Resources:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
         VPCID: !Ref 'VPCID'
+        SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
+        RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
   AutomationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -214,6 +216,8 @@ Resources:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
         WriteS3LambdaRoleArn: !GetAtt 'SecurityStack.Outputs.WriteS3LambdaRoleArn'
+        SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
+        RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
   WebAutoScaleStack:
     Type: AWS::CloudFormation::Stack
     Properties:

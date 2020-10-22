@@ -18,10 +18,10 @@ Parameters:
     Type: AWS::EC2::VPC::Id
   SetupConfigurationDocName:
     Type: String
-    Description: Document name of AWS Systems Manager Automation Document for Setup Config.
+    Description: Document name of AWS Systems Manager Automation Document for Setup Config to use for EventBridge Role.
   RemoveConfigurationDocName:
     Type: String
-    Description: Document name of AWS Systems Manager Automation Document for Removal Config.
+    Description: Document name of AWS Systems Manager Automation Document for Removal Config to use for EventBridge Role.
 Resources:
   ExecutionResourceRole:
     Type: AWS::IAM::Role

@@ -16,6 +16,12 @@ Parameters:
   WriteS3LambdaRoleArn:
     Description: "The IAM Role ARN that will be used for the Lambda that writes file to Config Bucket."
     Type: String
+  SetupConfigurationDocName:
+    Type: String
+    Description: Document name of AWS Systems Manager Automation Document for Setup Config.
+  RemoveConfigurationDocName:
+    Type: String
+    Description: Document name of AWS Systems Manager Automation Document for Removal Config.
 Resources:
   WriteMOFFunction:
     Type: AWS::Lambda::Function
@@ -62,7 +68,8 @@ Resources:
                   status = cfnresponse.FAILED
               finally:
                   timer.cancel()
-                  cfnresponse.send(event, context, status, {}, None)
+                  object_url = f'https://{bucket}.s3.amazonaws.com/{key}'
+                  cfnresponse.send(event, context, status, {}, object_url)
       Handler: index.handler
       Role: !Ref 'WriteS3LambdaRoleArn'
       Runtime: python3.7
@@ -319,6 +326,7 @@ Resources:
   SetupConfigurationDoc:
     Type: AWS::SSM::Document
     Properties:
+      Name: !Ref SetupConfigurationDocName
       DocumentType: Automation
       Content: 
         schemaVersion: "0.3"
@@ -333,9 +341,6 @@ Resources:
             type: "String"
           ConfigBucket:
             description: "Bucket Containing Mof Files"
-            type: "String"
-          LCHToken:
-            description: "Token of Life cycle action"
             type: "String"
           LCHName:
             description: "Life Cycle Hook Name"
@@ -503,6 +508,7 @@ Resources:
   RemoveConfigurationDoc:
     Type: AWS::SSM::Document
     Properties:
+      Name: !Ref RemoveConfigurationDocName
       DocumentType: Automation
       Content:
         schemaVersion: "0.3"
@@ -517,9 +523,6 @@ Resources:
             type: "String"
           ConfigBucket:
             description: "Bucket Containing Mof Files"
-            type: "String"
-          LCHToken:
-            description: "Token of Life cycle action"
             type: "String"
           LCHName:
             description: "Life Cycle Hook Name"

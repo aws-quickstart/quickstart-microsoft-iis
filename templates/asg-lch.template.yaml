@@ -115,10 +115,10 @@ Parameters:
     Type: String
   SetupConfigurationDocName:
     Type: String
-    Description: Document name of AWS Systems Manager Automation Document for Setup Config.
+    Description: Document name of AWS Systems Manager Automation Document for Setup Config to trigger using EventBridge.
   RemoveConfigurationDocName:
     Type: String
-    Description: Document name of AWS Systems Manager Automation Document for Removal Config.
+    Description: Document name of AWS Systems Manager Automation Document for Removal Config to trigger using EventBridge.
   SSMInstanceProfileName:
     Type: String
     Description: Instance profile name needed for AWS Systems Manager.
@@ -230,9 +230,8 @@ Resources:
             InputPathsMap:
               InstanceId: $.detail.EC2InstanceId
               ASGName: $.detail.AutoScalingGroupName
-              LCHToken: $.detail.LifecycleActionToken
               LCHName: $.detail.LifecycleHookName
-            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHToken":[<LCHToken>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
   ScaleDownEventBridgeResource:
     Type: AWS::Events::Rule
     Properties:
@@ -254,9 +253,8 @@ Resources:
             InputPathsMap:
               InstanceId: $.detail.EC2InstanceId
               ASGName: $.detail.AutoScalingGroupName
-              LCHToken: $.detail.LifecycleActionToken
               LCHName: $.detail.LifecycleHookName
-            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHToken":[<LCHToken>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
+            InputTemplate: !Sub '{"AutomationAssumeRole":["${ExecutionResourceArn}"],"InstanceId":[<InstanceId>],"ASGName":[<ASGName>],"LCHName":[<LCHName>],"ConfigBucket":["${ConfigBucket}"]}'
 Outputs:
   ELBUrl:
     Description: DNS name of the ELB.
