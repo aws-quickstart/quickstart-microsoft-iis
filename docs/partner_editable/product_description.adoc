@@ -2,7 +2,7 @@
 // Briefly describe the software. Use consistent and clear branding. 
 // Include the benefits of using the software on AWS, and provide details on usage scenarios.
 
-This Quick Start implements a highly available environment that includes Windows Server and IIS Server running on Amazon Elastic Compute Cloud (Amazon EC2), using Amazon EC2 Auto Scaling. This infrastructure provides the underpinnings for many Microsoft technology-based solutions for the enterprise, including SharePoint and .NET Framework applications.
+This Quick Start implements a highly available environment that includes Windows Server and IIS Server running on Amazon Elastic Compute Cloud (Amazon EC2), using Amazon EC2 Auto Scaling. This infrastructure provides the underpinnings for many Microsoft technology-based solutions for the enterprise, including SharePoint and .NET Framework applications. This Quick Start also demonstrates how you can join instances to a domain and remove them from a domain as part of an auto-sclaling group. 
 
 The automation in this deployment uses AWS Systems Manager Automation, AWS CloudFormation, and Windows PowerShell Desired State Configuration (DSC) to deploy IIS into an Amazon EC2 Auto Scaling group. Configuration of the instances is performed using https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html[lifecycle hooks], https://docs.aws.amazon.com/eventbridge/latest/userguide/what-is-amazon-eventbridge.html[Amazon EventBridge] and https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html[AWS Systems Manager Automation]. 
 
@@ -10,3 +10,5 @@ Implementing IIS in the AWS Cloud is very similar to deploying it in an on-premi
 
 * You must deploy the nodes inside a virtual private cloud (VPC).
 * We recommend that you deploy the nodes in separate subnets to provide high availability across multiple Availability Zones.
+
+PowerShell scripts are provided in the scripts folder, but all MOF files are generated and pushed up to an S3 bucket. 
