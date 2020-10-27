@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Deploy single windows EC2 Instance and join domain with SSM Association"
+Description: Deploy single windows EC2 Instance and join domain with SSM Association (qs-1r91fg4f3)
 Parameters:
   ConfigBucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$

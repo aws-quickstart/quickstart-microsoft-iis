@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "This CloudFormation Template demonstrates two ways to configure Windows Workloads with Auto-Scaling. In both scenario IIS will be install and configured to display a simple Static Page, 
+Description: This CloudFormation Template demonstrates one ways to configure Windows Workloads with Auto-Scaling. IIS will be installed and configured to display a simple Static Page, 
   with CloudWatch Logs collecting Metrics and Logs and AWS Systems Manager configuring the instances. Scenario 1 launches a scalable IIS environment based on a launch template, Application
-  Load Balancer and Auto Scaling Group. Configuretaion while Scaling is handled by Lifecycle Hooks, EventBridge, and .NET Core 3.1 Lambda function. Scenario 2 instead of using Life Cycle Hooks relies on AWS Systems Manager State
-  Manager Associations"
+  Load Balancer and Auto Scaling Group. Configuration while Scaling is handled by Lifecycle Hooks, EventBridge, and AWS System Manager automation. (qs-1r91fg4hm)
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"

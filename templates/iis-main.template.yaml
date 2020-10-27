@@ -5,7 +5,7 @@ Description: >-
   and a scalable VPC. The workloads template will deploy the architecture into an existing AD and VPC environment. 
   **WARNING**
   This template creates Amazon EC2 Windows instance and related resources. You will
-  be billed for the AWS resources used if you create a stack from this template.
+  be billed for the AWS resources used if you create a stack from this template. (qs-1r91fg4hu)
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an new VPC"

@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Launch a scalable IIS environment based on a launch template, Application
   Load Balancer and Auto Scaling Group. Scaling handled by Lifecycle Hooks, EventBridge,
-  and .NET Core 3.1 Lambda function.
+  and AWS Systems Manager. (qs-1r91fg4if)
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
