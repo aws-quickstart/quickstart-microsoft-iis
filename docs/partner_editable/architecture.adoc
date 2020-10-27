@@ -18,12 +18,15 @@ best practices, to provide you with your own virtual network on AWS.*
 ** Managed network address translation (NAT) gateways to allow 
 internet access for resources in the private subnets.*
 ** Elastic Load Balancer (ELB)
+** A Remote Desktop Gateway (RDGW) in an Auto Scaling group
 * In the private subnets:
 ** Auto-Scaling Group of EC2 Instances.
+** AWS-Managed Microsoft Active Directory (AD)
 // Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
 * AWS Systems Manager Automation Documents.
 * EventBridge Rules.
 * IAM Roles.
 * Security Groups.
+* S3 Bucket
 
 [.small]#*The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#
