@@ -1,4 +1,5 @@
 general:
+  s3_regional_buckets: true
   parameters:
     ADServer1InstanceType: m5.xlarge
     ADServer1NetBIOSName: DC1
