@@ -37,7 +37,6 @@ Metadata:
           default: Network Configuration
         Parameters:
           - AvailabilityZones
-          - AvailabiltyGroupName
           - VPCCIDR
           - NumberOfAZs
           - PublicSubnet1CIDR
@@ -59,6 +58,7 @@ Metadata:
           - ASGMaxSize
           - ASGMinSize
           - ELBSchemeParameter
+          - WebAccessCIDR
           - IISServerInstanceType
       - Label:
           default: AWS Quick Start Configuration
@@ -89,8 +89,6 @@ Metadata:
         default: Autoscaling group min size
       AvailabilityZones:
         default: Availability Zones
-      AvailabiltyGroupName:
-        default: Availability group name
       DomainAdminPassword:
         default: Domain admin password
       DomainAdminUser:
@@ -131,6 +129,8 @@ Metadata:
         default: RDGW instance type
       RDGWCIDR:
         default: Allowed RDGW external access CIDR
+      WebAccessCIDR:
+        default: CIDR range that can access load balancers
       VPCCIDR:
         default: VPC CIDR
 Parameters:
@@ -405,6 +405,11 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Description: Allowed CIDR block for external access to the Remote Desktop Gateway instances.
     Type: String
+  WebAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: Allowed CIDR Block for external access to the ELBs.
+    Type: String
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
@@ -546,7 +551,7 @@ Resources:
     Properties:
       TemplateURL:
         Fn::Sub:
-          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/iis-workload.yaml'
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/iis-workload.template.yaml'
           - S3Region: !If
               - UsingDefaultBucket
               - !Ref AWS::Region
@@ -571,6 +576,7 @@ Resources:
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
           ELBSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID
           ELBSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID
+          WebAccessCIDR: !Ref 'WebAccessCIDR'
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3BucketRegion: !Ref 'QSS3BucketRegion'
@@ -589,6 +595,7 @@ Resources:
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
           ELBSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           ELBSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
+          WebAccessCIDR: !Ref 'WebAccessCIDR'
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3BucketRegion: !Ref 'QSS3BucketRegion'

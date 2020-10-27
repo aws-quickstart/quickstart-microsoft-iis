@@ -3,7 +3,14 @@
 
 == Test the deployment
 // If steps are required to test the deployment, add them here. If not, remove the heading
-To test the deployment 
+To test the deployment grab the Outputs of the WebAutoScaleStack, the ELB URL. If you have allowed access to your Ip Address in the WebAccessCIDR parameter, you should be able to put the URL in a web browser and the see the following static web page. 
+
+[#sample-web-page]
+.CLI Command to port forward a local port to RDP on an EC2 Instance
+[link=images/SampleWebPage.png]
+image::../images/SampleWebPage.png[Sample Web Page,width=100%,height=100%]
+
+If you are unable to connect to the web page please review the security groups for the ELBs and verify they have the right CIDR Ranges.
 
 === Using Session Manager to RDP to a Windows EC2 Instance
 
@@ -53,7 +60,26 @@ Once you are done you can press Control+C to terminate the session.
 image::../images/rdp5.png[RDP,width=100%,height=100%]
 
 == Post deployment steps
-// If Post-deployment steps are required, add them here. If not, remove the heading
+If you want to make the Quick Start your own, take a look at the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml]. This Cloudformation template uploads all the MOF files that support the Quick Starts as well as creates the Automation Documents that are trigged by the lifecycle hooks of the Auto-Scaling group. The following code block demonstrates a step in the AWS Systems Manager Automation document. These steps under the *main step* section can be added to or modified to support your own Automation steps and configuration. For more information on what you can do in an Automation Document please refer to the https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-actions.html[Systems Manager Automation actions reference]. 
+[source,yaml]
+....
+- name: "setNameTag"
+  action: aws:runCommand
+  onFailure: "step:abandonHookAction"
+  inputs:
+    DocumentName: AWS-RunPowerShellScript
+    InstanceIds: 
+      - "{{InstanceId}}"
+    CloudWatchOutputConfig:
+      CloudWatchOutputEnabled: "true"
+      CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+    Parameters:
+      commands: 
+        - |
+           Import-Module AWSPowerShell
+           $instanceid = (Invoke-RestMethod -Method Get -Uri http://169.254.169.254/latest/meta-data/instance-id)
+           New-EC2Tag -Resource $instanceId -Tag @{Key="Name";Value=$env:COMPUTERNAME}
+....
 
 == Best practices for using {partner-product-short-name} on AWS
 // Provide post-deployment best practices for using the technology on AWS, including considerations such as migrating data, backups, ensuring high performance, high availability, etc. Link to software documentation for detailed information.

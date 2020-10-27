@@ -380,7 +380,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 commands: 
                   - |
@@ -396,7 +396,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 action:
                   - "Install"
@@ -415,7 +415,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 action:
                   - "configure"
@@ -436,7 +436,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 MofsToApply:
                   - "s3:{{ConfigBucket}}:DomainJoin.mof"
@@ -465,7 +465,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 MofsToApply:
                   - "s3:{{ConfigBucket}}:WebSite.mof"
@@ -541,7 +541,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/RemoveConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/RemoveConfiguration"
               Parameters:
                 MofsToApply:
                   - "s3:{{ConfigBucket}}:DomainRemove.mof"

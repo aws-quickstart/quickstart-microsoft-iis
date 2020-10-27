@@ -22,8 +22,9 @@ general:
     VPCCIDR: 10.0.0.0/16
     IISServerInstanceType: 't3.2xlarge'
     QSS3KeyPrefix: quickstart-microsoft-iis/
-    RDGWCIDR: 1.1.1.1/32
+    RDGWCIDR: 10.0.0.0/16
     RDGWInstanceType: t2.large
+    WebAccessCIDR: 10.0.0.0/16
 project:
   name: quickstart-microsoft-iis
   owner: quickstart-eng@amazon.com
@@ -55,6 +56,7 @@ tests:
       ASGDesiredCapacity: 2
       ASGMaxSize: 3
       ASGMinSize: 1
+      WebAccessCIDR: 10.0.0.0/16
   test-scenario2:
     template: ./templates/iis-main.template.yaml
     regions:
@@ -71,6 +73,7 @@ tests:
       ASGDesiredCapacity: 4
       ASGMaxSize: 5
       ASGMinSize: 2
+      WebAccessCIDR: 10.0.0.0/16
   test-scenario3:
     template: ./templates/iis-main.template.yaml
     regions:
@@ -86,3 +89,4 @@ tests:
       ASGDesiredCapacity: 3
       ASGMaxSize: 4
       ASGMinSize: 2
+      WebAccessCIDR: 10.0.0.0/16
