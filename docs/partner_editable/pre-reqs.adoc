@@ -2,7 +2,7 @@
 
 ==== Prepare your AWS account
 
-If you the existing VPC option, this also means you have an existing Active Directory domain within the VPC. The assumption when running the existing VPC option is that the DNS is configured to allow discovery of the Active Direction domain. For reference please refer to the Active Directory Quick Start
+If you choose the existing VPC option, this also means you have an existing Active Directory domain within the VPC. The assumption when running the existing VPC option is that the DNS is configured to allow discovery of the Active Direction domain. For reference please refer to the Active Directory Quick Start
 
 ==== Prepare your {partner-company-name} account
 
