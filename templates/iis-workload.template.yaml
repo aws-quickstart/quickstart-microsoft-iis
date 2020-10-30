@@ -284,6 +284,7 @@ Resources:
         WorkloadSubnet1ID: !Ref 'PrivateSubnet1ID'
         WorkloadSubnet2ID: !Ref 'PrivateSubnet2ID'
         ExecutionResourceArn: !GetAtt 'SecurityStack.Outputs.ExecutionResourceArn'
+        ExecutionRoleName: !GetAtt 'SecurityStack.Outputs.ExecutionRoleName'
         SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
         RemoveConfigurationDocName: !GetAtt 'AutomationStack.Outputs.RemoveConfigurationDocName'
         SSMInstanceProfileName: !GetAtt 'SecurityStack.Outputs.SSMInstanceProfileName'

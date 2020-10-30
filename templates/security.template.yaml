@@ -30,6 +30,15 @@ Resources:
   ExecutionResourceRole:
     Type: AWS::IAM::Role
     Properties:
+      Policies:
+        - PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - autoscaling:CompleteLifecycleAction
+                Resource: !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${AWS::StackName}
+          PolicyName: asg-lch-complete
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -41,8 +50,7 @@ Resources:
               - sts:AssumeRole
       Path: /
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole
       Description: New IAM Role to allow SSM access.
   WriteS3LambdaRole:
     Type: AWS::IAM::Role
@@ -195,6 +203,8 @@ Outputs:
     Value: !GetAtt ALBListenersSecurityGroup.GroupId
   ExecutionResourceArn:
     Value: !GetAtt ExecutionResourceRole.Arn
+  ExecutionRoleName:
+    Value: !Ref ExecutionResourceRole
   WriteS3LambdaRoleArn:
     Value: !GetAtt WriteS3LambdaRole.Arn
   SSMInstanceRoleArn:
