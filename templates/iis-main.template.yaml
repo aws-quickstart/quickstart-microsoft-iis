@@ -258,23 +258,18 @@ Parameters:
     Description: Select whether the ELB is internet-facing (public) or internal (private).
   IISServerInstanceType:
     AllowedValues:
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - t2.xlarge
-      - t2.2xlarge
       - t3.micro
       - t3.small
       - t3.medium
       - t3.large
       - t3.xlarge
       - t3.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
+      - t3a.micro
+      - t3a.small
+      - t3a.medium
+      - t3a.large
+      - t3a.xlarge
+      - t3a.2xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
@@ -283,32 +278,14 @@ Parameters:
       - m5.12xlarge
       - m5.16xlarge
       - m5.24xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-      - c4.4xlarge
-      - c4.8xlarge
-      - c5.large
-      - c5.xlarge
-      - c5.2xlarge
-      - c5.4xlarge
-      - c5.9xlarge
-      - c5.12xlarge
-      - c5.18xlarge
-      - c5.24xlarge
-      - r4.large
-      - r4.xlarge
-      - r4.2xlarge
-      - r4.4xlarge
-      - r4.8xlarge
-      - r5.large
-      - r5.xlarge
-      - r5.2xlarge
-      - r5.4xlarge
-      - r5.8xlarge
-      - r5.12xlarge
-      - r5.16xlarge
-      - r5.24xlarge
+      - m5a.large
+      - m5a.xlarge
+      - m5a.2xlarge
+      - m5a.4xlarge
+      - m5a.8xlarge
+      - m5a.12xlarge
+      - m5a.16xlarge
+      - m5a.24xlarge
     Default: t3.2xlarge
     Description: Amazon EC2 instance type for the second Active Directory instance
     Type: String
@@ -496,12 +473,8 @@ Resources:
           DomainDNSName: !Ref 'DomainDNSName'
           DomainNetBIOSName: !Ref 'DomainNetBIOSName'
           KeyPairName: !Ref 'KeyPairName'
-          PrivateSubnet1CIDR: !Ref 'PrivateSubnet1CIDR'
           PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
-          PrivateSubnet2CIDR: !Ref 'PrivateSubnet2CIDR'
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
-          PublicSubnet1CIDR: !Ref 'PublicSubnet1CIDR'
-          PublicSubnet2CIDR: !Ref 'PublicSubnet2CIDR'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3BucketRegion: !Ref 'QSS3BucketRegion'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
@@ -520,6 +493,7 @@ Resources:
           KeyPairName: !Ref 'KeyPairName'
           PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
+          EntCaServerSubnet: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3BucketRegion: !Ref 'QSS3BucketRegion'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
