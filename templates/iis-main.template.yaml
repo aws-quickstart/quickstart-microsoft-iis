@@ -295,6 +295,7 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
   NumberOfRDGWHosts:
     AllowedValues:
+      - '0'
       - '1'
       - '2'
       - '3'
@@ -407,6 +408,10 @@ Parameters:
     Type: String
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+  IncludeRDGW: !Not
+    - !Equals
+      - !Ref NumberOfRDGWHosts
+      - '0'
   UseAWSDirectoryServiceEE: !Equals
     - !Ref 'ADScenarioType'
     - AWS Directory Service for Microsoft AD (Enterprise Edition)
@@ -502,6 +507,7 @@ Resources:
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
   RDGWStack:
     Type: AWS::CloudFormation::Stack
+    Condition: IncludeRDGW
     Properties:
       TemplateURL:
         Fn::Sub:

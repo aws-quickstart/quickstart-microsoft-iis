@@ -12,7 +12,7 @@ general:
     DomainDNSName: test.com
     DomainNetBIOSName: test
     NumberOfAZs: '2'
-    NumberOfRDGWHosts: '1'
+    NumberOfRDGWHosts: '0'
     PrivateSubnet1CIDR: 10.0.0.0/19
     PrivateSubnet2CIDR: 10.0.32.0/19
     PrivateSubnet3CIDR: 10.0.64.0/19
