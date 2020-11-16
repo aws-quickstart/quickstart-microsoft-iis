@@ -2,4 +2,9 @@
 
 ==== Prepare your AWS account
 
-If you choose the existing VPC option, this also means you have an existing Active Directory domain within the VPC. The assumption when running the existing VPC option is that the DNS is configured to allow discovery of the Active Direction domain. For reference please refer to the Active Directory Quick Start. 
+This Quick Start assumes that if you choose to deploy IIS into an existing VPC:
+
+* You have an existing Active Directory domain within the VPC. 
+* The Domain Name System (DNS) is configured to allow discovery of the Active Direction domain.
+
+NOTE: For reference see the https://aws.amazon.com/quickstart/architecture/active-directory-ds/Active[Active Directory Domain Services on AWS] Quick Start. 
