@@ -12,34 +12,20 @@ image::../images/architecture_diagram.png[Architecture,width=100%,height=100%]
 As shown in <<architecture1>>, the Quick Start sets up the following:
 
 * A highly available architecture that spans two Availability Zones.*
-* A virtual private cloud (VPC) configured with public and private subnets according to AWS
-best practices, to provide you with your own virtual network on AWS.*
+* A virtual private cloud (VPC) configured with public and private subnets according to AWS best practices, to provide you with your own virtual network on AWS.*
 * In the public subnets:
 ** Managed network address translation (NAT) gateways to allow 
 internet access for resources in the private subnets.*
 ** Elastic Load Balancer (ELB)
-<<<<<<< HEAD
 ** A Remote Desktop Gateways (RDGW) in an Auto Scaling group
 * In the private subnets:
 ** Auto-Scaling Group of EC2 instances.
-** AWS-Managed Microsoft Active Directory (AD).
+** AWS-managed Microsoft Active Directory (AD).
 // Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
-* AWS Systems Manager automation documents.
-* Amazon EventBridge, providing rules that trigger configuration setup or removal in response to scale up or scale down events, respectively.
+* AWS Systems Manager to store automation documents.
+* Amazon EventBridge, providing the rules that trigger configuration setup or removal in response to scale up or scale down events, respectively.
 * IAM Roles.
 * Security Groups.
-* S3 Bucket to store Managed Object Format (MOP) files.
-=======
-** A Remote Desktop Gateway (RDGW) in an Auto Scaling group.
-* In the private subnets:
-** Auto-Scaling group of EC2 Instances
-** AWS managed Microsoft Active Directory (AD)
-// Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
-* AWS Systems Manager.
-* Amazon EventBridge.
-* IAM Roles.
-* Security Groups.
-* Managed Object Format (MOP) files in an Amazon S3 Bucket.
->>>>>>> a1ed089958f497bb9dc5453a046aef72415484e8
+* Amazon Simple Storage Service (Amazon S3) bucket for storing Managed Object Format (MOP) files.
 
 *The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.

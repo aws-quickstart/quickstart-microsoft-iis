@@ -1,10 +1,6 @@
 
-<<<<<<< HEAD
 === Deploy into a new VPC
-=======
-=== Launch into an new VPC
->>>>>>> a1ed089958f497bb9dc5453a046aef72415484e8
 include::iis-main.template.adoc[]
 
-=== Launch into an existing VPC
+=== Deploy into an existing VPC
 include::iis-workload.template.adoc[]

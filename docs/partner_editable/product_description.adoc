@@ -2,7 +2,7 @@
 // Briefly describe the software. Use consistent and clear branding. 
 // Include the benefits of using the software on AWS, and provide details on usage scenarios.
 
-This Quick Start deploys a highly available environment that includes Windows Server and IIS Server running on Amazon Elastic Compute Cloud (Amazon EC2), using Amazon EC2 Auto Scaling. This infrastructure provides the underpinnings for many Microsoft enterprise solutions, including SharePoint and .NET Framework. Also, the Quick Start demonstrates how to join instances to a domain and remove them from a domain as part of an Auto Scaling group. 
+This Quick Start deploys a highly available environment that includes Windows Server and IIS Server running on Amazon Elastic Compute Cloud (Amazon EC2), using Auto Scaling. It demonstrates how to join instances to a domain and remove them from a domain as part of an Auto Scaling group. This infrastructure also provides the underpinnings for running many Microsoft enterprise solutions on the AWS Cloud, including SharePoint and .NET Framework. 
 
 The automation in this deployment uses AWS Systems Manager Automation, AWS CloudFormation, and Windows PowerShell Desired State Configuration (DSC) to deploy IIS into an Amazon EC2 Auto Scaling group. Configuration of the instances is performed using https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html[lifecycle hooks], https://docs.aws.amazon.com/eventbridge/latest/userguide/what-is-amazon-eventbridge.html[Amazon EventBridge], and https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html[AWS Systems Manager Automation]. 
 
