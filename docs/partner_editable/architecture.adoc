@@ -19,10 +19,10 @@ As shown in <<architecture1>>, the Quick Start sets up the following:
 ** A Remote Desktop gateways (RDGW) in an Auto Scaling group.
 * In the private subnets:
 ** Auto Scaling group of EC2 instances into which Microsoft IIS is deployed.
-** AWS Directory Service for Microsoft Active Directory (AD), a highly available domain controllers connected to your VPC.
+** AWS Directory Service for Microsoft Active Directory (AD).
 // Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
 * Amazon EventBridge, providing the rules that trigger automation routines in response to auto scaling events.
-* AWS Systems Manager to store automation documents that specify the setup and removal configuration routines.
+* AWS Systems Manager to store automation documents.
 * AWS Identity and Access Management (IAM) roles.
 * Security groups to control traffic to your EC2 instances.
 * Amazon Simple Storage Service (Amazon S3) bucket for storing Managed Object Format (MOP) files.

@@ -17,19 +17,20 @@ NOTE: If you are unable to connect to the test page, review the security groups 
 
 This Quick Start deploys AWS Systems Manager Agent (SSM Agent) on all EC2 instances. With SSM Agent, you can use the Windows remote desktop protocol (RDP) to connect to them without the need for an RDP bastion host or opening inbound port 3389 with Session Manager. This section explains the requirements for using this feature and how to connect to an EC2 instance of Windows Server using RDP.
 
-NOTE: See https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html[What is Systems Manager?], https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.htmlAWS[Systems Manager Session Manager], and https://docs.aws.amazon.com/systems-manager/latest/userguide/prereqs-ssm-agent.html[AWS Systems Manager Agent (SSM Agent)] for more information.
+See the following sites for more information about these AWS services and software:
+
+* https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html[What is Systems Manager?]
+* https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html[AWS Systems Manager Session Manager]
+* https://docs.aws.amazon.com/systems-manager/latest/userguide/prereqs-ssm-agent.html[AWS Systems Manager Agent (SSM Agent)]
 
 ==== Prerequisites
-You must complete the following:
-
  * https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html[AWS Command Line Interface] must be installed on your desktop.
  * https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#cli-quick-configuration[AWS Command Line Interface (AWS CLI)] must be configured with security credentials for your AWS account.
  * https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-windows[Session Manager plugin] for AWS CLI must be installed.
-
-These prerequisites are completed automatically by deploying the Quick Start:
-
  * SSM Agent must be installed on EC2 instances.*
  * Instance role attached allowing access to Systems Manager API.*
+
+*These prerequisites are completed automatically as part of the Quick Start deployment.
 
 ==== Connecting to a Windows instance with RDP
 
@@ -51,15 +52,13 @@ aws ssm start-session --target "<your-instance-id>" --document-name AWS-StartPor
 image::../images/clisessionmanager.png[Start Session,width=100%,height=100%]
 
 [start=2]
-. Once the session is established, open your Remote Desktop application and enter localhost:56788.
+. Once the session is established, open your Remote Desktop application and enter localhost:56788. (Or any port number not currently in use.)
 . Select *Connect*.
 
 [#rdp-session]
 .Connecting to localhost:56788
 [link=images/rdpgraphic.png]
 image::../images/rdpgraphic.png[RDP,width=100%,height=100%]
-
-NOTE: You can use any local port number not currently in use.
 
 [start=3]
 . When the client prompts you for credentials, enter the appropriate password to log in.
@@ -70,7 +69,7 @@ NOTE: You can use any local port number not currently in use.
 image::../images/loggedin.png[RDP,width=100%,height=100%]
 
 [start=4]
-. Once you are done you can terminate the session.
+. Once you are done you can end your Remote Desktop session and disconnect.
 
 [#disconnected-session]
 .Disconnect Session
@@ -111,14 +110,4 @@ See the following sites for practices to help you get the best results from runn
 
 * https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-best-practices.html[Best practices for Windows on Amazon EC2].
 * https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/iis-best-practices/ba-p/1241577[IIS Best Practices]
-* https://docs.microsoft.com/en-us/iis/get-started/whats-new-in-iis-10-version-1709/new-features-introduced-in-iis-10-1709[New Features Introduced in IIS 10.0 Version 1709]. 
-
-
-== Modifying the Windows Server version
-//Provide any other information of interest to users, especially focusing on areas where AWS or cloud usage differs from on-premises usage.
-
-This Quick Start launches with Windows Server 2019 Core AMI, the AMI includes the license for Windows Server and is updated on a regular basis with the latest service pack for the operating system. If you would like to modify the Windows Server version modify the ImageId parameter in /templates/asg-lch.template.yaml. For a list of Windows images you can run the following command from the AWS CLI:
-[source,bash]
-....
-aws ssm get-parameters-by-path --path "/aws/service/ami-windows-latest" --region us-east-1
-....
+* https://docs.microsoft.com/en-us/iis/get-started/whats-new-in-iis-10-version-1709/new-features-introduced-in-iis-10-1709[New Features Introduced in IIS 10.0 Version 1709].
