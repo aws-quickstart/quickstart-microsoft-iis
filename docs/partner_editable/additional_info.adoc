@@ -1,31 +1,37 @@
 // Add steps as necessary for accessing the software, post-configuration, and testing. Don’t include full usage instructions for your software, but add links to your product documentation for that information.
 //Should any sections not be applicable, remove them
 
-== Test the deployment
+=== Testing the deployment
 // If steps are required to test the deployment, add them here. If not, remove the heading
-To test the deployment grab the Outputs of the WebAutoScaleStack, the ELB URL. If you have allowed access to your Ip Address in the WebAccessCIDR parameter, you should be able to put the URL in a web browser and the see the following static web page. 
+:xrefstyle: short
+To test the deployment, first ensure that your IP address is entered in the WebAccessCIDR parameter. If so, you can enter the URL of your Elastic Load Balancer (part of the output of the WebAutoScaleStack) in a web browser. The window shown in <<#sample-web-page>> will display.
 
 [#sample-web-page]
-.CLI Command to port forward a local port to RDP on an EC2 Instance
+.Test page
 [link=images/SampleWebPage.png]
 image::../images/SampleWebPage.png[Sample Web Page,width=100%,height=100%]
 
-If you are unable to connect to the web page please review the security groups for the ELBs and verify they have the right CIDR Ranges.
+NOTE: If you are unable to connect to the test page, review the security groups for the ELBs and verify they have the correct CIDR ranges.
 
-=== Using Session Manager to RDP to a Windows EC2 Instance
+== Using AWS Systems Manager Session Manager
 
-This Quick Start includes the https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html[AWS Systems Manager] agent on all instances. With the AWS Systems Manager agent you can RDP to these Windows Instances without the need for an RDP bastion host or opening inbound port 3389 using https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html[Session Manager]. This section will document the requirements for using this feature and how to use it. 
+This Quick Start deploys AWS Systems Manager Agent (SSM Agent) on all EC2 instances. With SSM Agent, you can use Remote Desktop Protocol (RDP) to connect to them without the need for an RDP bastion host or opening inbound port 3389 with Session Manager. This section explains the requirements for using this feature and how to connect to an EC2 instance of Windows Server using RDP.
 
-==== Pre-Reqs
- . 1. https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html[AWS Command Line Interface] installed on your desktop.
- . 2. https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#cli-quick-configuration[Configure AWS CLI] with security credentials for your AWS Account.
- . 3. Install the https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-windows[Session Manager plugin] for the AWS CLI.
- . 4. EC2 Instance with Systems Manager Agent installed.*
- .. a. Instance role attached allowing access to Systems Manager API.*
+NOTE: See https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html[What is Systems Manager?], https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.htmlAWS[Systems Manager Session Manager], and https://docs.aws.amazon.com/systems-manager/latest/userguide/prereqs-ssm-agent.html[AWS Systems Manager Agent (SSM Agent)] for more information.
 
-*Represents steps done by the Quick Start. All other steps require you to setup on your local machine. 
+==== Prerequisites
+You must complete the following:
 
-==== Steps to Remote Desktop to Windows Instance
+ * https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html[AWS Command Line Interface] must be installed on your desktop.
+ * https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#cli-quick-configuration[AWS Command Line Interface (AWS CLI)] must be configured with security credentials for your AWS account.
+ * https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-windows[Session Manager plugin] for AWS CLI must be installed.
+
+These prerequisites are completed automatically by deploying the Quick Start:
+
+ * SSM Agent must be installed on EC2 instances.*
+ * Instance role attached allowing access to Systems Manager API.*
+
+==== Connecting to a Windows instance with RDP
 
 You will first need to start a port forwarding session. Then you would need to open the Remote Desktop Application on your local machine. Using the Remote Desktop application, you will point to the local port of the session, which will forward you on to the Instance.
 

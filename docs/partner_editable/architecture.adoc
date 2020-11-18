@@ -14,18 +14,17 @@ As shown in <<architecture1>>, the Quick Start sets up the following:
 * A highly available architecture that spans two Availability Zones.*
 * A virtual private cloud (VPC) configured with public and private subnets according to AWS best practices, to provide you with your own virtual network on AWS.*
 * In the public subnets:
-** Managed network address translation (NAT) gateways to allow 
-internet access for resources in the private subnets.*
-** Elastic Load Balancer (ELB)
-** A Remote Desktop Gateways (RDGW) in an Auto Scaling group
+** Managed network address translation (NAT) gateways to allow internet access for resources in the private subnets.*
+** Elastic Load Balancer (ELB) to distribute traffic across EC2 instances.
+** A Remote Desktop gateways (RDGW) in an Auto Scaling group.
 * In the private subnets:
-** Auto Scaling group of EC2 instances.
-** AWS managed Microsoft Active Directory (AD).
+** Auto Scaling group of EC2 instances into which Microsoft IIS is deployed.
+** AWS Directory Service for Microsoft Active Directory (AD), a highly available domain controllers connected to your VPC.
 // Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
-* AWS Systems Manager to store automation documents.
-* Amazon EventBridge, providing the rules that trigger configuration setup or removal in response to scale up or scale down events, respectively.
-* IAM roles.
-* Security groups.
+* Amazon EventBridge, providing the rules that trigger automation routines in response to auto scaling events.
+* AWS Systems Manager to store automation documents that specify the setup and removal configuration routines.
+* AWS Identity and Access Management (IAM) roles.
+* Security groups to control traffic to your EC2 instances.
 * Amazon Simple Storage Service (Amazon S3) bucket for storing Managed Object Format (MOP) files.
 
 *The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.
