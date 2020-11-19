@@ -12,21 +12,19 @@ image::../images/architecture_diagram.png[Architecture,width=100%,height=100%]
 As shown in <<architecture1>>, the Quick Start sets up the following:
 
 * A highly available architecture that spans two Availability Zones.*
-* A VPC configured with public and private subnets, according to AWS
-best practices, to provide you with your own virtual network on AWS.*
+* A VPC configured with public and private subnets according to AWS best practices, to provide you with your own virtual network on AWS.*
 * In the public subnets:
-** Managed network address translation (NAT) gateways to allow 
-internet access for resources in the private subnets.*
-** Elastic Load Balancer (ELB)
-** A Remote Desktop Gateway (RDGW) in an Auto Scaling group
+** Managed network address translation (NAT) gateways to allow internet access for resources in the private subnets.*
+** Elastic Load Balancer (ELB) to distribute traffic across EC2 instances.
+** Remote Desktop (RD) gateways in an Auto Scaling group.
 * In the private subnets:
-** Auto-Scaling Group of EC2 Instances.
-** AWS-Managed Microsoft Active Directory (AD)
+** Auto Scaling group of EC2 instances into which Microsoft IIS is deployed.
+** AWS Directory Service for Microsoft Active Directory (AD).
 // Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
-* AWS Systems Manager Automation Documents.
-* EventBridge Rules.
-* IAM Roles.
-* Security Groups.
-* S3 Bucket
+* Amazon EventBridge, providing the rules that trigger automation routines in response to Auto Scaling events.
+* AWS Systems Manager to store automation documents.
+* AWS Identity and Access Management (IAM) roles.
+* Security groups to control traffic to your EC2 instances.
+* Amazon Simple Storage Service (Amazon S3) bucket for storing Managed Object Format (MOP) files.
 
 [.small]#*The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

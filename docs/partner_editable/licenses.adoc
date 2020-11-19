@@ -1,13 +1,13 @@
 // Include details about the license and how they can sign up. If no license is required, clarify that. 
 
-The AWS CloudFormation template for this Quick Start includes configuration parameters that you can customize. Some of these settings, such as instance type, volume size, will affect the cost of deployment. See the pricing pages for each AWS service you will be using for cost estimates.
+The AWS CloudFormation template for this Quick Start includes configuration parameters that you can customize. Some of these settings, such as instance type and volume size, affect the cost of its deployment. For cost estimates, see the pricing pages for each AWS service used by the Quick Start.
 
-*Tip* After you deploy the Quick Start, we recommend that you enable the https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-gettingstarted-turnonreports.html[AWS Cost and Usage Report] to track costs associated with the Quick Start. This report delivers billing metrics to an Amazon Simple Storage Service (Amazon S3) bucket in your account. It provides cost estimates based on usage throughout each month and finalizes the data at the end of the month. For more information about the report, see the https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-costusage.html[AWS documentation].
+TIP: After you deploy the Quick Start, we recommend that you enable the https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-gettingstarted-turnonreports.html[AWS Cost and Usage Report] to track costs associated with the Quick Start. This report delivers billing metrics to an Amazon Simple Storage Service (Amazon S3) bucket in your account. It provides cost estimates based on usage throughout each month and finalizes the data at the end of the month. For more information about the report, see https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-costusage.html[What are AWS Cost and Usage Reports?].
 
-This Quick Start launches with Windows Server 2019 Core AMI, the AMI includes the license for Windows Server and is updated on a regular basis with the latest service pack for the operating system. If you would like to modify the Windows Server version please modify the *ImageId* parameter in the asg-lch.template.yaml template in the templates folder. For a list of Windows Images you can run  the following command from the AWS CLI:
+This Quick Start launches with Windows Server 2019 Core AMI, which includes the license for Windows Server updated on a regular basis with the latest service pack for the operating system. To modify the Windows Server version, edit the ImageId parameter in /templates/asg-lch.template.yaml. For a list of Windows images, you can run the following command from the AWS CLI:
 [source,bash]
 ....
 aws ssm get-parameters-by-path --path "/aws/service/ami-windows-latest" --region us-east-1
 ....
 
-For more information Licensing Windows on AWS, see the https://aws.amazon.com/windows/resources/licensing/[Microsoft Licensing on AWS] webpage.
+NOTE: For more information Licensing Windows on AWS, see https://aws.amazon.com/windows/resources/licensing/[Microsoft Licensing on AWS].
