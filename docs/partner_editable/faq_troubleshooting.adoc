@@ -5,7 +5,7 @@
 *Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
 
 *A.* This Quick Start uses AWS Systems Manager Agent to perform configuration on the Instance and exports logs to Amazon Cloudwatch. In the region you deployed the Quick Start, look for the log group that starts with */QuickStart* and you will find the log output of all scripts run as part of this Quick Start. 
-For the Remote Desktop Gateway stack do the following: 
+For the Remote Desktop gateway stack do the following: 
 If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue. (For Windows, look at the log files in %ProgramFiles%\Amazon\EC2ConfigService and C:\cfn\log.)
 // If you’re deploying on Linux instances, provide the location for log files on Linux, or omit this sentence.
 
@@ -15,12 +15,12 @@ For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/la
 
 *Q.* I encountered a size limitation error when I deployed the AWS CloudFormation templates.
 
-*A.* We recommend that you launch the Quick Start templates from the links in this guide or from another S3 bucket. If you deploy the templates from a local copy on your computer or from a location other than an S3 bucket, you might encounter template size limitations. For more information about AWS CloudFormation quotas, see the http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html[AWS documentation^].
+*A.* We recommend that you launch the Quick Start templates from the link:#launch-the-quick-start[links in this guide] or from another S3 bucket. If you deploy the templates from a local copy on your computer or from a location other than an S3 bucket, you might encounter template size limitations. For more information about AWS CloudFormation quotas, see http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html[AWS CloudFormation quotas^].
 
 *Q.* I encountered a limit exceeded error when I deployed the AWS CloudFormation templates.
 
-*A.* Verify that you didn't reach a resource limit. For example, the default number Amazon EC2 instances that you can launch is 20. If try to create more Amazon EC2 instances than your account limit, the instance creation fails and you receive the error Status=start_failed. To view the default AWS limits by service, see https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html[AWS service limits] in the AWS General Reference. 
+*A.* Verify that you didn't reach a resource limit. For example, the default number Amazon EC2 instances that you can launch is 20. If try to create more Amazon EC2 instances than your account limit, the instance creation fails and you receive the error Status=start_failed. To view the default AWS limits by service, see https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html[AWS service quotas]. 
 
 == Troubleshooting
 
-For any other issues not mentioned previously please see the https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html#troubleshooting-errors-limit-exceeded[Troubleshooting AWS CloudFormation] documentation. For any issues with AWS Systems Manager please refer to the https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-remote-commands.html[Troubleshooting Systems Manager Run Command] and the https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-remote-commands.html[Troubleshooting Systems Manager Automation] pages. 
+For any other issues not mentioned previously please see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html#troubleshooting-errors-limit-exceeded[Troubleshooting AWS CloudFormation]. For issues with AWS Systems Manager see https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-remote-commands.html[Troubleshooting Systems Manager Run Command] and https://https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-troubleshooting.html[Troubleshooting Systems Manager Automation]. 

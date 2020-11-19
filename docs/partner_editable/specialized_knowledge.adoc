@@ -1,4 +1,4 @@
 // Replace the content in <>
 // Describe or link to specific knowledge requirements; for example: “familiarity with basic concepts in the areas of networking, database operations, and data encryption” or “familiarity with <software>.”
 
-For more information about the AWS services that are used in this Quick Start, see the link:#additional-resources[Additional resources] section of this guide. For more information on running Windows on AWS see https://aws.amazon.com/windows[Windows on AWS].
+For more information on running Windows on AWS see https://aws.amazon.com/windows[Windows on AWS].
