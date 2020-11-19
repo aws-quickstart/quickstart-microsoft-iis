@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "This CloudFormation Template demonstrates two ways to configure Windows Workloads with Auto-Scaling. In both scenario IIS will be install and configured to display a simple Static Page, 
+Description: This CloudFormation Template demonstrates one ways to configure Windows Workloads with Auto-Scaling. IIS will be installed and configured to display a simple Static Page, 
   with CloudWatch Logs collecting Metrics and Logs and AWS Systems Manager configuring the instances. Scenario 1 launches a scalable IIS environment based on a launch template, Application
-  Load Balancer and Auto Scaling Group. Configuretaion while Scaling is handled by Lifecycle Hooks, EventBridge, and .NET Core 3.1 Lambda function. Scenario 2 instead of using Life Cycle Hooks relies on AWS Systems Manager State
-  Manager Associations"
+  Load Balancer and Auto Scaling Group. Configuration while Scaling is handled by Lifecycle Hooks, EventBridge, and AWS System Manager automation. (qs-1r91fg4hm)
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into an existing VPC"
@@ -23,6 +22,7 @@ Metadata:
           - ASGMaxSize
           - ASGMinSize
           - ELBSchemeParameter
+          - WebAccessCIDR
           - IISServerInstanceType
       - Label:
           default: Network Configuration
@@ -74,6 +74,8 @@ Metadata:
         default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
+      WebAccessCIDR:
+        default: CIDR range that can access load balancers
       VPCID:
         default: VPC ID for workload
 Parameters:
@@ -219,6 +221,10 @@ Parameters:
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     Type: String
+  WebAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: Allowed CIDR Block for external access to the ELBs.
+    Type: String
   VPCID:
     Description: ID of the VPC (e.g., vpc-0343606e)
     Type: AWS::EC2::VPC::Id
@@ -245,13 +251,14 @@ Resources:
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
+        WebAccessCIDR: !Ref 'WebAccessCIDR'
         VPCID: !Ref 'VPCID'
         SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
         RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
   AutomationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/automation-parts.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/automation-parts.template.yaml'
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
@@ -277,6 +284,7 @@ Resources:
         WorkloadSubnet1ID: !Ref 'PrivateSubnet1ID'
         WorkloadSubnet2ID: !Ref 'PrivateSubnet2ID'
         ExecutionResourceArn: !GetAtt 'SecurityStack.Outputs.ExecutionResourceArn'
+        ExecutionRoleName: !GetAtt 'SecurityStack.Outputs.ExecutionRoleName'
         SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
         RemoveConfigurationDocName: !GetAtt 'AutomationStack.Outputs.RemoveConfigurationDocName'
         SSMInstanceProfileName: !GetAtt 'SecurityStack.Outputs.SSMInstanceProfileName'

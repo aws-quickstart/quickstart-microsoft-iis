@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Deploy single windows EC2 Instance and join domain with SSM Association"
+Description: Deploy single windows EC2 Instance and join domain with SSM Association (qs-1r91fg4f3)
 Parameters:
   ConfigBucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -16,6 +16,10 @@ Parameters:
   VPCID:
     Description: "VPC ID where the security groups will reside"
     Type: AWS::EC2::VPC::Id
+  WebAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: Allowed CIDR Block for external access to the ELBs.
+    Type: String
   SetupConfigurationDocName:
     Type: String
     Description: Document name of AWS Systems Manager Automation Document for Setup Config to use for EventBridge Role.
@@ -26,6 +30,15 @@ Resources:
   ExecutionResourceRole:
     Type: AWS::IAM::Role
     Properties:
+      Policies:
+        - PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - autoscaling:CompleteLifecycleAction
+                Resource: !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${AWS::StackName}
+          PolicyName: asg-lch-complete
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -37,8 +50,7 @@ Resources:
               - sts:AssumeRole
       Path: /
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole
       Description: New IAM Role to allow SSM access.
   WriteS3LambdaRole:
     Type: AWS::IAM::Role
@@ -172,7 +184,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref 'WebAccessCIDR'
       VpcId: !Ref 'VPCID'
   ALBListenersSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -191,6 +203,8 @@ Outputs:
     Value: !GetAtt ALBListenersSecurityGroup.GroupId
   ExecutionResourceArn:
     Value: !GetAtt ExecutionResourceRole.Arn
+  ExecutionRoleName:
+    Value: !Ref ExecutionResourceRole
   WriteS3LambdaRoleArn:
     Value: !GetAtt WriteS3LambdaRole.Arn
   SSMInstanceRoleArn:

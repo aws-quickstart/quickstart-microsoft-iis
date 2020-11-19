@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Launch a scalable IIS environment based on a launch template, Application
   Load Balancer and Auto Scaling Group. Scaling handled by Lifecycle Hooks, EventBridge,
-  and .NET Core 3.1 Lambda function.
+  and AWS Systems Manager. (qs-1r91fg4if)
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -111,7 +111,10 @@ Parameters:
     Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
     Type: AWS::EC2::Subnet::Id
   ExecutionResourceArn:
-    Description: "The IAM Role ARN that will be used for Event Bridge to execute SSM Automation."
+    Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
+    Type: String
+  ExecutionRoleName:
+    Description: "The IAM Role Name that will be passed by Event Bridge to SSM Automation."
     Type: String
   SetupConfigurationDocName:
     Type: String
@@ -132,6 +135,19 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Select security group for the launch template.
 Resources:
+  CompleteLCHPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: asg-lch-complete
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - autoscaling:CompleteLifecycleAction
+            Resource: !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${AWS::StackName}
+      Roles:
+        - !Ref ExecutionRoleName
   EC2LaunchTemplateResource:
     Type: AWS::EC2::LaunchTemplate
     DeletionPolicy: Delete
@@ -204,11 +220,11 @@ Resources:
         - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
           LifecycleHookName: DomainJoinHook
           DefaultResult: ABANDON
-          HeartbeatTimeout: 1000
+          HeartbeatTimeout: 1200
         - LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
           LifecycleHookName: DomainUnjoinHook
           DefaultResult: ABANDON
-          HeartbeatTimeout: 1000
+          HeartbeatTimeout: 600
   ScaleUpEventBridgeResource:
     Type: AWS::Events::Rule
     Properties:

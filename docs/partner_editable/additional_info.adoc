@@ -3,9 +3,83 @@
 
 == Test the deployment
 // If steps are required to test the deployment, add them here. If not, remove the heading
+To test the deployment grab the Outputs of the WebAutoScaleStack, the ELB URL. If you have allowed access to your Ip Address in the WebAccessCIDR parameter, you should be able to put the URL in a web browser and the see the following static web page. 
+
+[#sample-web-page]
+.CLI Command to port forward a local port to RDP on an EC2 Instance
+[link=images/SampleWebPage.png]
+image::../images/SampleWebPage.png[Sample Web Page,width=100%,height=100%]
+
+If you are unable to connect to the web page please review the security groups for the ELBs and verify they have the right CIDR Ranges.
+
+=== Using Session Manager to RDP to a Windows EC2 Instance
+
+This Quick Start includes the https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html[AWS Systems Manager] agent on all instances. With the AWS Systems Manager agent you can RDP to these Windows Instances without the need for an RDP bastion host or opening inbound port 3389 using https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html[Session Manager]. This section will document the requirements for using this feature and how to use it. 
+
+==== Pre-Reqs
+ . 1. https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html[AWS Command Line Interface] installed on your desktop.
+ . 2. https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#cli-quick-configuration[Configure AWS CLI] with security credentials for your AWS Account.
+ . 3. Install the https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-windows[Session Manager plugin] for the AWS CLI.
+ . 4. EC2 Instance with Systems Manager Agent installed.*
+ .. a. Instance role attached allowing access to Systems Manager API.*
+
+*Represents steps done by the Quick Start. All other steps require you to setup on your local machine. 
+
+==== Steps to Remote Desktop to Windows Instance
+
+You will first need to start a port forwarding session. Then you would need to open the Remote Desktop Application on your local machine. Using the Remote Desktop application, you will point to the local port of the session, which will forward you on to the Instance.
+
+. Step 1 - Browse to the EC2 Console and note instance-id for the instance you want to connect to.
+. Step 2 - Open up the AWS Cli and run the following command, inputting your target instance id after the --target parameter.
+[source,bash]
+....
+aws ssm start-session --target "<your-instance-id>" --document-name AWS-StartPortForwardingSession --parameters "portNumber"=["3389"],"localPortNumber"=["56788"]
+....
+[#start-session]
+.CLI Command to port forward a local port to RDP on an EC2 Instance
+[link=images/clisessionmanager.png]
+image::../images/clisessionmanager.png[Start Session,width=100%,height=100%]
+
+. Step 3 - Once the session is established, open up your RDP application and connect to localhost:56788. You can use any local port number not in use. You will need to provide the appropriate credentials for the windows instances you are logging into.
+[#rdp-session]
+.RDP to Local Port
+[link=images/rdpgraphic.png]
+image::../images/rdpgraphic.png[RDP,width=100%,height=100%]
+
+. Step 4 - You will then be logged into the instance, and perform any administrative function you need to.
+[#connected-EC2]
+.Connected to EC2
+[link=images/loggedin.png]
+image::../images/loggedin.png[RDP,width=100%,height=100%]
+
+
+Once you are done you can press Control+C to terminate the session. 
+[#disconnected-session]
+.Disconnect Session
+[link=images/rdp5.png]
+image::../images/rdp5.png[RDP,width=100%,height=100%]
 
 == Post deployment steps
-// If Post-deployment steps are required, add them here. If not, remove the heading
+If you want to make the Quick Start your own, take a look at the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml]. This Cloudformation template uploads all the MOF files that support the Quick Starts as well as creates the Automation Documents that are trigged by the lifecycle hooks of the Auto-Scaling group. The following code block demonstrates a step in the AWS Systems Manager Automation document. These steps under the *main step* section can be added to or modified to support your own Automation steps and configuration. For more information on what you can do in an Automation Document please refer to the https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-actions.html[Systems Manager Automation actions reference]. 
+[source,yaml]
+....
+- name: "setNameTag"
+  action: aws:runCommand
+  onFailure: "step:abandonHookAction"
+  inputs:
+    DocumentName: AWS-RunPowerShellScript
+    InstanceIds: 
+      - "{{InstanceId}}"
+    CloudWatchOutputConfig:
+      CloudWatchOutputEnabled: "true"
+      CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+    Parameters:
+      commands: 
+        - |
+           Import-Module AWSPowerShell
+           $instanceid = (Invoke-RestMethod -Method Get -Uri http://169.254.169.254/latest/meta-data/instance-id)
+           New-EC2Tag -Resource $instanceId -Tag @{Key="Name";Value=$env:COMPUTERNAME}
+....
 
 == Best practices for using {partner-product-short-name} on AWS
 // Provide post-deployment best practices for using the technology on AWS, including considerations such as migrating data, backups, ensuring high performance, high availability, etc. Link to software documentation for detailed information.
@@ -17,4 +91,8 @@ For best practice for IIS in Windows please review https://techcommunity.microso
 == Other useful information
 //Provide any other information of interest to users, especially focusing on areas where AWS or cloud usage differs from on-premises usage.
 
-_Add any other details that will help the customer use the software on AWS._
+This Quick Start launches with Windows Server 2019 Core AMI, the AMI includes the license for Windows Server and is updated on a regular basis with the latest service pack for the operating system. If you would like to modify the Windows Server version please modify the *ImageId* parameter in the asg-lch.template.yaml template in the templates folder. For a list of Windows Images you can run  the following command from the AWS CLI:
+[source,bash]
+....
+aws ssm get-parameters-by-path --path "/aws/service/ami-windows-latest" --region us-east-1
+....

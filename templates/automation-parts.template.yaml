@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Deploy single windows EC2 Instance and join domain with SSM Association"
+Description: Scripts, Automation Documents, all components to perform configuration. (qs-1r91fg4is)
 Parameters:
   ConfigBucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -380,13 +380,18 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 commands: 
                   - |
                      Import-Module AWSPowerShell
-                     $instanceid = (Invoke-RestMethod -Method Get -Uri http://169.254.169.254/latest/meta-data/instance-id)
-                     New-EC2Tag -Resource $instanceId -Tag @{Key="Name";Value=$env:COMPUTERNAME}
+                     Try {
+                       $instanceid = (Invoke-RestMethod -Method Get -Uri http://169.254.169.254/latest/meta-data/instance-id)
+                       New-EC2Tag -Resource $instanceId -Tag @{Key="Name";Value=$env:COMPUTERNAME}
+                     }Catch [System.Exception] {
+                       Write-Output "Failed to set Name Tag $_"
+                       Exit 1
+                     }  
           - name: "installCloudWatchAgent"
             action: aws:runCommand
             onFailure: step:abandonHookAction
@@ -396,7 +401,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 action:
                   - "Install"
@@ -415,7 +420,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 action:
                   - "configure"
@@ -436,7 +441,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 MofsToApply:
                   - "s3:{{ConfigBucket}}:DomainJoin.mof"
@@ -465,7 +470,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/SetupConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/SetupConfiguration"
               Parameters:
                 MofsToApply:
                   - "s3:{{ConfigBucket}}:WebSite.mof"
@@ -541,7 +546,7 @@ Resources:
                 - "{{InstanceId}}"
               CloudWatchOutputConfig:
                 CloudWatchOutputEnabled: "true"
-                CloudWatchLogGroupName: "/QuickStart/RemoveConfiguration"
+                CloudWatchLogGroupName: "/QuickStart/IIS/RemoveConfiguration"
               Parameters:
                 MofsToApply:
                   - "s3:{{ConfigBucket}}:DomainRemove.mof"
