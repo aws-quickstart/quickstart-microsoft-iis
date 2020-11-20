@@ -2,9 +2,11 @@
 // Briefly describe the software. Use consistent and clear branding. 
 // Include the benefits of using the software on AWS, and provide details on usage scenarios.
 
-This Quick Start deploys a highly available environment that includes Windows Server and IIS Server running on Amazon Elastic Compute Cloud (Amazon EC2), using Auto Scaling. It demonstrates how to join instances to a domain and remove them from a domain as part of an Auto Scaling group. This infrastructure also provides the underpinnings for running many Microsoft enterprise solutions on the AWS Cloud, including SharePoint and .NET Framework. 
+This Quick Start deploys Microsoft IIS into an Amazon Elastic Compute Cloud (Amazon EC2) Auto Scaling group. Nodes are highly available, deployed into separate subnets across multiple Availability Zones. As a reference deployment, it demonstrates how to join and remove instances to and from a domain as part of an Auto Scaling group. The infrastructure it deploys provides a foundation for running many Microsoft enterprise solutions on the AWS Cloud, including SharePoint and .NET Framework.
 
-The automation in this deployment uses AWS Systems Manager Automation, AWS CloudFormation, and Windows PowerShell Desired State Configuration (DSC) to deploy IIS into an Amazon EC2 Auto Scaling group. Configuration of the instances is performed using https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html[lifecycle hooks], https://docs.aws.amazon.com/eventbridge/latest/userguide/what-is-amazon-eventbridge.html[Amazon EventBridge], and https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html[AWS Systems Manager Automation]. 
+The automation in this Quick Start is provided by AWS Systems Manager, AWS CloudFormation, and Windows PowerShell Desired State Configuration (DSC).
+
+Configuration of EC2 instances is performed using https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html[lifecycle hooks], https://docs.aws.amazon.com/eventbridge/latest/userguide/what-is-amazon-eventbridge.html[Amazon EventBridge], and https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html[AWS Systems Manager Automation]. 
 
 Implementing IIS in the AWS Cloud is very similar to deploying it in an on-premises setting, except the nodes are deployed inside a virtual private cloud (VPC) in separate subnets to provide high availability across multiple Availability Zones.
 
