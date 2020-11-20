@@ -38,14 +38,14 @@ NOTE: You are responsible for the cost of the AWS services used while running th
 WARNING: This Quick Start does not support https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html[shared subnets^]. If you’re deploying {partner-product-short-name} into an existing VPC, make sure that the VPC has two private subnets in different Availability Zones for the workload instances, and that the subnets aren’t shared. These subnets require https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html[NAT gateways^] in their route tables, to allow the instances to download packages and software without exposing them to the internet. Also, make sure that the domain name option in DHCP options is configured as explained in http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_DHCP_Options.html[DHCP options sets^]. You provide your VPC settings when you launch the Quick Start.
 
 [start=2]
-. The AWS Region displayed in the upper-right corner of the navigation bar is where the {partner-product-short-name} network infrastructure will be deployed. Change it if necessary. ( {default_deployment_region} Region is the default.)
+. The AWS Region displayed in the upper-right corner of the navigation bar is where the {partner-product-short-name} network infrastructure will be deployed ({default_deployment_region} Region is the default.). Change it if necessary. 
 
 // *Note:* This deployment includes Amazon EFS, which isn’t currently supported in all AWS Regions. For a current list of supported Regions, see the https://docs.aws.amazon.com/general/latest/gr/elasticfilesystem.html[endpoints and quotas webpage].
 
 [start=3]
 . On the *Create stack* page, keep the default setting for the template URL, and then choose *Next*.
 . On the *Specify stack details* page, change the stack name if needed. 
-. Review the parameters for the template, entering values where required and editing default values as needed.
+. Review the parameters for the template, entering values where required and editing default values as needed. (See the link:#_parameter_reference[Parameter reference] section later in the guide.)
 
 // In the following tables, parameters are listed by category and described separately for the two deployment options:
 
