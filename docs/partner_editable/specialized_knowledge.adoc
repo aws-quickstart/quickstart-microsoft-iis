@@ -1,4 +1,4 @@
 // Replace the content in <>
 // Describe or link to specific knowledge requirements; for example: “familiarity with basic concepts in the areas of networking, database operations, and data encryption” or “familiarity with <software>.”
 
-For more information on running Windows on AWS see https://aws.amazon.com/windows[Windows on AWS].
+For more information, see https://aws.amazon.com/windows[Windows on AWS].
