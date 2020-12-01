@@ -396,8 +396,8 @@ Conditions:
       - !Ref NumberOfRDGWHosts
       - '0'
   UseAWSDirectoryServiceEE: !Equals
-    - !Ref 'ADScenarioType'
-    - AWS Directory Service for Microsoft AD (Enterprise Edition)
+      - !Ref 'ADScenarioType'
+      - Microsoft AD on Amazon EC2
   UseELBPublicSubnets: !Equals
     - !Ref 'ELBSchemeParameter'
     - internet-facing
@@ -445,8 +445,8 @@ Resources:
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/templates/${QSADTemplate}
         - QSADTemplate: !If
             - UseAWSDirectoryServiceEE
-            - ad-3.template
             - ad-1.template
+            - ad-3.template
           S3Region: !If
             - UsingDefaultBucket
             - !Ref AWS::Region
@@ -457,19 +457,6 @@ Resources:
             - !Ref QSS3BucketName
       Parameters: !If
         - UseAWSDirectoryServiceEE
-        - DomainAdminPassword: !Ref 'DomainAdminPassword'
-          DomainDNSName: !Ref 'DomainDNSName'
-          DomainNetBIOSName: !Ref 'DomainNetBIOSName'
-          KeyPairName: !Ref 'KeyPairName'
-          PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
-          PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
-          MgmtServerSubnet: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
-          MgmtKeyPairName: !Ref 'KeyPairName'
-          QSS3BucketName: !Ref 'QSS3BucketName'
-          QSS3BucketRegion: !Ref 'QSS3BucketRegion'
-          QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
-          VPCCIDR: !Ref 'VPCCIDR'
-          VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
         - ADServer1InstanceType: !Ref 'ADServer1InstanceType'
           ADServer1NetBIOSName: !Ref 'ADServer1NetBIOSName'
           ADServer1PrivateIP: !Ref 'ADServer1PrivateIP'
@@ -484,6 +471,17 @@ Resources:
           PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
           EntCaServerSubnet: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
+          QSS3BucketName: !Ref 'QSS3BucketName'
+          QSS3BucketRegion: !Ref 'QSS3BucketRegion'
+          QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
+          VPCCIDR: !Ref 'VPCCIDR'
+          VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
+        - DomainAdminPassword: !Ref 'DomainAdminPassword'
+          DomainDNSName: !Ref 'DomainDNSName'
+          DomainNetBIOSName: !Ref 'DomainNetBIOSName'
+          KeyPairName: !Ref 'KeyPairName'
+          PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
+          PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3BucketRegion: !Ref 'QSS3BucketRegion'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
