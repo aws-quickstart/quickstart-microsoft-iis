@@ -138,7 +138,7 @@ Parameters:
     AllowedValues:
       - AWS Directory Service for Microsoft AD (Enterprise Edition)
       - Microsoft AD on Amazon EC2
-    Default: AWS Directory Service for Microsoft Active Directory (Enterprise Edition)
+    Default: AWS Directory Service for Microsoft AD (Enterprise Edition)
     Description: Select the type of deployment to use, either AWS Directory Service for Microsoft Active Directory or managing your own Amazon EC2 Active Directory instances.
     Type: String
   ADServer1InstanceType:
