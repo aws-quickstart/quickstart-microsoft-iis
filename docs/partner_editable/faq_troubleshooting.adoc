@@ -4,12 +4,12 @@
 
 *Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
 
-*A.* This Quick Start uses AWS Systems Manager Agent to perform configuration on the Instance and exports logs to Amazon Cloudwatch. In the region you deployed the Quick Start, look for the log group that starts with */QuickStart* and you will find the log output of all scripts run as part of this Quick Start. 
-For the Remote Desktop gateway stack do the following: 
-If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue. (For Windows, look at the log files in %ProgramFiles%\Amazon\EC2ConfigService and C:\cfn\log.)
+*A.* This Quick Start uses AWS Systems Manager Agent to configure instances and exports logs to Amazon CloudWatch. In the Region where you deployed this Quick Start, look for the log group that begins with */QuickStart*. It contains the output log of executed scripts. 
+
+For the Remote Desktop gateway stack do the following: If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained and the instance remains running, so you can troubleshoot the issue. (For Windows, look at the log files in %ProgramFiles%\Amazon\EC2ConfigService and C:\cfn\log.)
 // If you’re deploying on Linux instances, provide the location for log files on Linux, or omit this sentence.
 
-WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Please make sure to delete the stack when you finish troubleshooting.
+WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for the stack. Ensure that you delete the stack when you finish troubleshooting.
 
 For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^] on the AWS website.
 
@@ -19,8 +19,8 @@ For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/la
 
 *Q.* I encountered a limit exceeded error when I deployed the AWS CloudFormation templates.
 
-*A.* Verify that you didn't reach a resource limit. For example, the default number Amazon EC2 instances that you can launch is 20. If try to create more Amazon EC2 instances than your account limit, the instance creation fails and you receive the error Status=start_failed. To view the default AWS limits by service, see https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html[AWS service quotas]. 
+*A.* Verify that you didn't reach a resource limit. For example, the default number of Amazon EC2 instances that you can launch is 20. If you try to create more Amazon EC2 instances than your account allows, the instance creation fails and you receive the *Status=start_failed* error. For more information, see https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html[AWS service quotas]. 
 
 == Troubleshooting
 
-For any other issues not mentioned previously please see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html#troubleshooting-errors-limit-exceeded[Troubleshooting AWS CloudFormation]. For issues with AWS Systems Manager see https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-remote-commands.html[Troubleshooting Systems Manager Run Command] and https://https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-troubleshooting.html[Troubleshooting Systems Manager Automation]. 
+For any other issues see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html#troubleshooting-errors-limit-exceeded[Troubleshooting AWS CloudFormation]. For issues with AWS Systems Manager see https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-remote-commands.html[Troubleshooting Systems Manager Run Command] and https://https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-troubleshooting.html[Troubleshooting Systems Manager Automation]. 

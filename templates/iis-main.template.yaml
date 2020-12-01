@@ -21,7 +21,7 @@ Metadata:
           - DomainAdminUser
           - DomainAdminPassword
       - Label:
-          default: Self-managed AD configuration (optional if AD is deployed on EC2)
+          default: Self-managed Active Directory configuration (optional if Active Directory is deployed on EC2)
         Parameters:
           - ADServer1InstanceType
           - ADServer1NetBIOSName
@@ -68,7 +68,7 @@ Metadata:
           - QSS3KeyPrefix
     ParameterLabels:
       ADScenarioType:
-        default: AD scenario type
+        default: Active Directory scenario type
       ADServer1InstanceType:
         default: Domain controller 1 instance type
       ADServer1NetBIOSName:
@@ -92,15 +92,15 @@ Metadata:
       DomainAdminPassword:
         default: Domain administrator password
       DomainAdminUser:
-        default: Domain administrator user name
+        default: Domain administrator name
       DomainDNSName:
         default: Domain DNS name
       DomainNetBIOSName:
         default: Domain NetBIOS name
       ELBSchemeParameter:
-        default: ELB Scheme
+        default: Elastic Load Balancing scheme
       IISServerInstanceType:
-        default: Instance type for IIS servers
+        default: IIS servers instance type
       KeyPairName:
         default: Key-pair name
       NumberOfAZs:
@@ -130,7 +130,7 @@ Metadata:
       RDGWCIDR:
         default: Allowed RD gateway external access CIDR
       WebAccessCIDR:
-        default: CIDR range that can access Elastic Load Balancers
+        default: Elastic Load Balancers CIDR range
       VPCCIDR:
         default: VPC CIDR
 Parameters:
@@ -138,8 +138,8 @@ Parameters:
     AllowedValues:
       - AWS Directory Service for Microsoft AD (Enterprise Edition)
       - Microsoft AD on Amazon EC2
-    Default: AWS Directory Service for Microsoft AD (Enterprise Edition)
-    Description: Select the type of AD Directory Service deployment to use, either AWS Directory Service for Microsoft AD or managing your own Amazon EC2 AD instances.
+    Default: AWS Directory Service for Microsoft Active Directory (Enterprise Edition)
+    Description: Select the type of deployment to use, either AWS Directory Service for Microsoft Active Directory or managing your own Amazon EC2 Active Directory instances.
     Type: String
   ADServer1InstanceType:
     AllowedValues:
@@ -222,7 +222,7 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: Admin
     Description: >-
-      User name for the domain administrator account. This is separate from the default administrator account. Note: This is for a self-managed AD scenario. When using AWS Directory Service for Microsoft AD, "Admin" is the default regardless of the value provided.      
+      User name for the domain administrator account. This is separate from the default administrator account. Note: This is for a self-managed Active Directory scenario. When using AWS Directory Service for Microsoft Active Directory, "Admin" is the default regardless of the value provided.      
     MaxLength: '25'
     MinLength: '5'
     Type: String
@@ -236,7 +236,7 @@ Parameters:
   DomainNetBIOSName:
     AllowedPattern: '[a-zA-Z0-9\-]+'
     Default: example
-    Description: NetBIOS name of the domain for users of earlier versions of Windows (up to 15 characters).
+    Description: NetBIOS name of the domain for users of earlier Windows versions (up to 15 characters).
     MaxLength: '15'
     MinLength: '1'
     Type: String
@@ -246,7 +246,7 @@ Parameters:
     AllowedValues:
       - internet-facing
       - internal
-    Description: Select whether the ELB is internet-facing (public) or internal (private).
+    Description: Choose whether the Elastic Load Balancer is public or private.
   IISServerInstanceType:
     AllowedValues:
       - t3.micro
@@ -281,7 +281,7 @@ Parameters:
     Description: Amazon EC2 instance type for the second Active Directory instance.
     Type: String
   KeyPairName:
-    Description: Public/private key pairs allow you to securely connect to your instance after it launches.
+    Description: Key pairs for connecting to your instance after it launches.
     Type: AWS::EC2::KeyPair::KeyName
   NumberOfRDGWHosts:
     AllowedValues:
@@ -338,7 +338,7 @@ Parameters:
     Type: String
   QSS3BucketRegion:
     Default: us-east-1
-    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. You must specify this value when using your own S3 bucket.
+    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Specify this value when using your own S3 bucket.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$

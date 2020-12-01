@@ -49,19 +49,19 @@ Metadata:
       DomainNetBIOSName:
         default: Domain NetBIOS name
       DomainAdminUser:
-        default: Domain administrator user name
+        default: Domain administrator name
       DomainAdminPassword:
         default: Domain administrator password
       DomainMemberSecurityGroup:
         default: Security group with access to domain
       ELBSchemeParameter:
-        default: ELB scheme
+        default: Elastic Load Balancing scheme
       ELBSubnet1ID:
-        default: Subnet for ELB
+        default: Elastic Load Balancer subnet
       ELBSubnet2ID:
-        default: Subnet for ELB
+        default: Elastic Load Balancer subnet
       IISServerInstanceType:
-        default: Instance type for IIS servers
+        default: IIS server instance type
       PrivateSubnet1ID:
         default: Private subnet 
       PrivateSubnet2ID:
@@ -73,7 +73,7 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       WebAccessCIDR:
-        default: CIDR range that can access ELBs
+        default: Elastic Load Balancer CIDR range
       VPCID:
         default: VPC ID for workload
 Parameters:
@@ -88,8 +88,7 @@ Parameters:
     Description: Desired capacity of the Auto Scaling group.
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Description: Password for the domain admin user. Must be at least 8 characters,
-      containing letters, numbers, and symbols.
+    Description: Password for the domain administrator. It must be at least 8 characters and contain letters, numbers, and symbols.
     MaxLength: '32'
     MinLength: '8'
     NoEcho: 'true'
@@ -118,19 +117,19 @@ Parameters:
     Type: String
   DomainMemberSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
-    Description: Select EC2 security group that allows for Active Directory communication.
+    Description: Choose the EC2 security group that allows for Active Directory communication.
   ELBSchemeParameter:
     Type: String
     Default: internet-facing
     AllowedValues:
       - internet-facing
       - internal
-    Description: Select whether the ELB is internet-facing (public) or internal (private).
+    Description: Choose whether the Elastic Load Balancer is public or private.
   ELBSubnet1ID:
-    Description: ID of subnet 1 in Availability Zone 1 where the Application Load Balancer will reside (e.g., subnet-a0246dcd). If the ELB is internet-facing, select a public subnet. Otherwise, select a private subnet.
+    Description: ID of subnet 1 in Availability Zone 1 where the Application Load Balancer will reside (e.g., subnet-a0246dcd). If the Elastic Load Balancer faces the internet, choose a public subnet. Otherwise, choose a private subnet.
     Type: AWS::EC2::Subnet::Id
   ELBSubnet2ID:
-    Description: ID of subnet 2 in Availability Zone 2 where the Application Load Balancer will reside (e.g., subnet-a0246dcd). If the ELB is internet-facing, select a public subnet. Otherwise, select a private subnet.
+    Description: ID of subnet 2 in Availability Zone 2 where the Application Load Balancer will reside (e.g., subnet-a0246dcd). If the Elastic Load Balancer faces the internet, choose a public subnet. Otherwise, choose a private subnet.
     Type: AWS::EC2::Subnet::Id
   IISServerInstanceType:
     AllowedValues:
@@ -206,7 +205,7 @@ Parameters:
     Type: String
   QSS3BucketRegion:
     Default: us-east-1
-    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. You must specify this value when using your own S3 bucket.
+    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Specify this value when using your own S3 bucket.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
