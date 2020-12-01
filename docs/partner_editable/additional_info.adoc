@@ -4,18 +4,18 @@
 === Testing the deployment
 // If steps are required to test the deployment, add them here. If not, remove the heading
 :xrefstyle: short
-To test the deployment, first ensure that your IP address is entered in the WebAccessCIDR parameter. If so, you can enter the URL of your Elastic Load Balancer (part of the output of the WebAutoScaleStack) in a web browser. The window shown in <<#sample-web-page>> will display.
+To test the deployment, ensure that your IP address is entered in the WebAccessCIDR parameter. If it is, you can enter the URL of your Elastic Load Balancer (part of the output of the WebAutoScaleStack) into a web browser. The window shown in <<#sample-web-page>> is displayed.
 
 [#sample-web-page]
 .Test page
 [link=images/SampleWebPage.png]
 image::../images/SampleWebPage.png[Sample Web Page,width=100%,height=100%]
 
-NOTE: If you are unable to connect to the test page, review the security groups for the ELBs and verify they have the correct CIDR ranges.
+NOTE: If you are unable to connect to the test page, review the security groups for the Elastic Load Balancers and verify that the CIDR ranges are correct.
 
-== Using AWS Systems Manager Session Manager
+== Using AWS Systems Manager Agent
 
-This Quick Start deploys AWS Systems Manager Agent (SSM Agent) on all EC2 instances. With SSM Agent, you can use the Windows remote desktop protocol (RDP) to connect to them without the need for an RDP bastion host or opening inbound port 3389 with Session Manager. This section explains the requirements for using this feature and how to connect to an EC2 instance of Windows Server using RDP.
+This Quick Start deploys AWS Systems Manager Agent (SSM Agent) on all EC2 instances. With SSM Agent, you can use the Windows remote desktop protocol (RDP) to connect to EC2 instances without the need for an RDP bastion host or opening inbound port 3389 with Session Manager. This section explains the requirements for using this feature and how to connect to an EC2 instance of Windows Server using RDP.
 
 See the following sites for more information about these AWS services and software:
 
@@ -36,10 +36,8 @@ See the following sites for more information about these AWS services and softwa
 
 :xrefstyle: short
 . Start a port forwarding session. 
-.. Browse to the https://console.aws.amazon.com/ec2/[Amazon EC2 Console] and note the instance ID (for example, "i-1234567890abcdef0").
-.. Run the following command in the AWS CLI, inputting your target instance id after the --target parameter. (See <<start-session>>.)
-.. Open the Remote Desktop application on your local machine.
-.. Point to the local port of the session, which forwards you on to the instance.
+.. Navigate to the https://console.aws.amazon.com/ec2/[EC2 Console], and note the instance ID (for example, "i-1234567890abcdef0").
+.. Run the following command in the AWS CLI by providing your target instance ID after the --target parameter. (See <<start-session>>.)
 
 [source,bash]
 ....
@@ -52,8 +50,8 @@ aws ssm start-session --target "<your-instance-id>" --document-name AWS-StartPor
 image::../images/clisessionmanager.png[Start Session,width=100%,height=100%]
 
 [start=2]
-. Once the session is established, open your Remote Desktop application and enter localhost:56788. (Or any port number not currently in use.)
-. Select *Connect*.
+. When the session is established, open the Remote Desktop application, and enter localhost:56788 (or any port number that's not currently in use.)
+. Choose *Connect*.
 
 [#rdp-session]
 .Connecting to localhost:56788
@@ -69,7 +67,7 @@ image::../images/rdpgraphic.png[RDP,width=100%,height=100%]
 image::../images/loggedin.png[RDP,width=100%,height=100%]
 
 [start=4]
-. Once you are done you can end your Remote Desktop session and disconnect.
+. When you finish, end your Remote Desktop session and disconnect.
 
 [#disconnected-session]
 .Disconnect Session
@@ -77,9 +75,9 @@ image::../images/loggedin.png[RDP,width=100%,height=100%]
 image::../images/rdp5.png[RDP,width=100%,height=100%]
 
 == Post-deployment steps
-If you want to make the Quick Start your own, take a look at the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml]. This Cloudformation template uploads all the MOF files that support the Quick Starts as well as creates the automation documents that are triggered by the lifecycle hooks of the Auto Scaling group. 
+If you want to modify this Quick Start see the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml] template. This AWS Cloudformation template uploads the MOF files and creates the automation documents that are triggered by the Auto Scaling group's lifecycle hooks. 
 
-The following code block demonstrates a step in the AWS Systems Manager automation document. These steps under the *main step* section can be added to or modified to support your own automation steps and configuration.
+The following code block demonstrates a step in the AWS Systems Manager automation document. These steps under the *main step* section can be modified to support your own automation steps and configuration.
 
 [source,yaml]
 ....
@@ -101,12 +99,12 @@ The following code block demonstrates a step in the AWS Systems Manager automati
            New-EC2Tag -Resource $instanceId -Tag @{Key="Name";Value=$env:COMPUTERNAME}
 ....
 
-NOTE: For more information on what you can do in an automation document, see https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-actions.html[Systems Manager Automation actions reference].
+NOTE: For more information about automation documents, see https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-actions.html[Systems Manager Automation actions reference].
 
 == Best practices for using {partner-product-short-name} on AWS
 // Provide post-deployment best practices for using the technology on AWS, including considerations such as migrating data, backups, ensuring high performance, high availability, etc. Link to software documentation for detailed information.
 
-See the following sites for practices to help you get the best results from running Windows on Amazon EC2:
+For best practices to help you get the intended results from running Windows on Amazon EC2, see the following sites:
 
 * https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-best-practices.html[Best practices for Windows on Amazon EC2].
 * https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/iis-best-practices/ba-p/1241577[IIS Best Practices]
