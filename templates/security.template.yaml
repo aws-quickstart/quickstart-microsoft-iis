@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploy single windows EC2 Instance and join domain with SSM Association (qs-1r91fg4f3)
+Description: Security resources for IIS (qs-1r91fg4f3)
 Parameters:
   ConfigBucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -13,9 +13,10 @@ Parameters:
   DomainJoinSecrets:
     Description: "The Secrets Manager name or ARN that will be used to perform all need domain actions."
     Type: "String"
-  VPCID:
-    Description: "VPC ID where the security groups will reside"
-    Type: AWS::EC2::VPC::Id
+  ECSClusterName:
+    Type: String
+    Description: Name of ECS cluster.
+    Default: ''
   WebAccessCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Description: Allowed CIDR Block for external access to the ELBs.
@@ -26,6 +27,22 @@ Parameters:
   RemoveConfigurationDocName:
     Type: String
     Description: Document name of AWS Systems Manager Automation Document for Removal Config to use for EventBridge Role.
+  WebBucketName:
+    Type: String
+    Description: Bucket name where html/htm file is located for iis. If left blank, a sample page will be used.
+    Default: "" 
+  WebBucketKey:
+    Type: String
+    Description: Bucket Key where html/htm file is located for iis. Only use if WebBucketName specified, otherwise leave default.
+    Default: "webfiles/index.html"
+  VPCID:
+    Description: "VPC ID where the security groups will reside"
+    Type: AWS::EC2::VPC::Id
+Conditions:
+  ECSDeploy: !Not
+    - !Equals
+      - !Ref ECSClusterName
+      - ''
 Resources:
   ExecutionResourceRole:
     Type: AWS::IAM::Role
@@ -37,7 +54,10 @@ Resources:
               - Effect: Allow
                 Action:
                   - autoscaling:CompleteLifecycleAction
-                Resource: !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${AWS::StackName}
+                Resource: !If 
+                  - ECSDeploy
+                  - !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/ECS-AutoscalingGroup-${AWS::StackName}
+                  - !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/EC2-AutoscalingGroup-${AWS::StackName}
           PolicyName: asg-lch-complete
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -79,6 +99,61 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  ECSTaskRole:
+    Condition: ECSDeploy
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+                  - s3:GetObject
+              Resource:
+                - !Sub "arn:aws:s3:::${WebBucketName}/${WebBucketKey}"
+          PolicyName: ecs-get-bucket-info
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+  ECSInstancePolicy:
+    Condition: ECSDeploy
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: InstacePolicyForECS
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ecs:Poll'
+              - 'ecs:StartTelemetrySession'
+              - 'ecs:UpdateContainerInstancesState'
+            Resource: !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*
+            Condition:
+              'ArnLikeIfExists':
+                'ecs:cluster': !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ECSClusterName}
+          - Effect: Allow
+            Action:
+              - 'ecs:DeregisterContainerInstance'
+              - 'ecs:DiscoverPollEndpoint'
+              - 'ecs:RegisterContainerInstance'
+              - 'ecs:Submit*'
+            Resource: !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ECSClusterName}
+          - Effect: Allow
+            Action:
+              - 'ecs:DiscoverPollEndpoint'
+            Resource: '*'
+      Roles:
+        - !Ref SSMInstanceRole
   SSMInstanceRole: 
     Type : AWS::IAM::Role
     Properties:
@@ -95,6 +170,8 @@ Resources:
                   - !Sub 'arn:aws:s3:::amazon-ssm-packages-${AWS::Region}/*'
                   - !Sub 'arn:aws:s3:::${AWS::Region}-birdwatcher-prod/*'
                   - !Sub 'arn:aws:s3:::patch-baseline-snapshot-${AWS::Region}/*'
+                  - !Sub "arn:aws:s3:::${ConfigBucket}/*"
+                  - !Sub "arn:aws:s3:::${WebBucketName}/${WebBucketKey}"
                 Effect: Allow
           PolicyName: ssm-custom-s3-policy
         - PolicyDocument:
@@ -113,19 +190,20 @@ Resources:
               - Effect: Allow
                 Action:
                   - ec2:CreateTags
-                Resource: !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*'
-          PolicyName: qs-tags-Policy
+                Resource: '*'
+                Condition:
+                  'StringEquals':
+                    'aws:ARN': '${ec2:SourceInstanceARN}'
+                  'ForAllValues:StringEquals':
+                    'aws:TagKeys': Name
+          PolicyName: qs-tags-policy
         - PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:PutObjectAcl
                   - s3:ListBucket
                 Resource: 
                   - !Sub "arn:aws:s3:::${ConfigBucket}"
-                  - !Sub "arn:aws:s3:::${ConfigBucket}/*"
                 Effect: Allow
           PolicyName: s3-instance-bucket-policy
       Path: /
@@ -196,6 +274,67 @@ Resources:
           ToPort: 80
           SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
       VpcId: !Ref 'VPCID'
+  EcsSecurityGroupALBports:
+    Condition: ECSDeploy
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref ALBListenersSecurityGroup
+      IpProtocol: tcp
+      FromPort: 31000
+      ToPort: 61000
+      SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
+  AutoscalingRole:
+    Condition: ECSDeploy
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - application-autoscaling.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: service-autoscaling
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'application-autoscaling:*'
+                  - 'cloudwatch:DescribeAlarms'
+                  - 'cloudwatch:PutMetricAlarm'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                Resource: '*'
+  ECSServiceRole:
+    Type: 'AWS::IAM::Role'
+    Condition: ECSDeploy
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: ecs-service
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+                  - 'elasticloadbalancing:DeregisterTargets'
+                  - 'elasticloadbalancing:Describe*'
+                  - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+                  - 'elasticloadbalancing:RegisterTargets'
+                  - 'ec2:Describe*'
+                  - 'ec2:AuthorizeSecurityGroupIngress'
+                Resource: '*'
 Outputs:
   ALBSecurityGroup:
     Value: !GetAtt ALBSecurityGroup.GroupId
@@ -213,3 +352,17 @@ Outputs:
     Value: !Ref SSMInstanceProfile
   EventBridgeSSMAutoRole:
     Value: !GetAtt EventBridgeSSMAutoRole.Arn
+  AutoscalingRole:
+    Condition: ECSDeploy
+    Value: !GetAtt AutoscalingRole.Arn
+  ECSServiceRole:
+    Condition: ECSDeploy
+    Value: !GetAtt ECSServiceRole.Arn
+  ECSTaskRole:
+    Condition: ECSDeploy
+    Value: !GetAtt ECSTaskRole.Arn
+  AutoScalingGroupName:
+    Value: !If 
+      - ECSDeploy
+      - !Sub ECS-AutoscalingGroup-${AWS::StackName}
+      - !Sub EC2-AutoscalingGroup-${AWS::StackName}

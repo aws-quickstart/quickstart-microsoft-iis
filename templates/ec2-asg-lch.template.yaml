@@ -113,8 +113,8 @@ Parameters:
   ExecutionResourceArn:
     Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
     Type: String
-  ExecutionRoleName:
-    Description: "The IAM Role Name that will be passed by Event Bridge to SSM Automation."
+  AutoScalingGroupName:
+    Description: "The autoscaling group name"
     Type: String
   SetupConfigurationDocName:
     Type: String
@@ -135,19 +135,6 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Select security group for the launch template.
 Resources:
-  CompleteLCHPermission:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: asg-lch-complete
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - autoscaling:CompleteLifecycleAction
-            Resource: !Sub arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${AWS::StackName}
-      Roles:
-        - !Ref ExecutionRoleName
   EC2LaunchTemplateResource:
     Type: AWS::EC2::LaunchTemplate
     DeletionPolicy: Delete
@@ -201,7 +188,7 @@ Resources:
     DependsOn: ScaleUpEventBridgeResource
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: !Sub "${AWS::StackName}"
+      AutoScalingGroupName: !Ref AutoScalingGroupName
       MinSize: !Ref 'ASGMinSize'
       MaxSize: !Ref 'ASGMaxSize'
       DesiredCapacity: !Ref 'ASGDesiredCapacity'
@@ -237,7 +224,7 @@ Resources:
           - EC2 Instance-launch Lifecycle Action
         detail:
           AutoScalingGroupName:
-            - !Sub "${AWS::StackName}"
+            - !Ref AutoScalingGroupName
       Targets:
         - Arn: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
           Id: Windows-Scale-Out
@@ -260,7 +247,7 @@ Resources:
           - EC2 Instance-terminate Lifecycle Action
         detail:
           AutoScalingGroupName:
-            - !Sub "${AWS::StackName}"
+            - !Ref AutoScalingGroupName
       Targets:
         - Arn: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
           Id: Windows-Scale-In
