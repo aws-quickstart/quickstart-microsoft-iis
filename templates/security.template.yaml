@@ -70,7 +70,7 @@ Resources:
               - sts:AssumeRole
       Path: /
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonSSMAutomationRole
       Description: New IAM Role to allow SSM access.
   WriteS3LambdaRole:
     Type: AWS::IAM::Role
@@ -85,8 +85,8 @@ Resources:
                 - s3:DeleteObject
                 - s3:ListBucket
               Resource:
-                - !Sub "arn:aws:s3:::${ConfigBucket}"
-                - !Sub "arn:aws:s3:::${ConfigBucket}/*"
+                - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}"
+                - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}/*"
           PolicyName: write-mof-s3
       Path: /
       AssumeRolePolicyDocument:
@@ -111,7 +111,7 @@ Resources:
               Action:
                   - s3:GetObject
               Resource:
-                - !Sub "arn:aws:s3:::${WebBucketName}/${WebBucketKey}"
+                - !Sub "arn:${AWS::Partition}:s3:::${WebBucketName}/${WebBucketKey}"
           PolicyName: ecs-get-bucket-info
       Path: /
       ManagedPolicyArns:
@@ -126,6 +126,13 @@ Resources:
             Action: sts:AssumeRole
   ECSInstancePolicy:
     Condition: ECSDeploy
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyActionWildcard: Multiple ECS actions are needed
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: InstacePolicyForECS
@@ -164,14 +171,14 @@ Resources:
               - Action:
                   - s3:GetObject
                 Resource: 
-                  - !Sub 'arn:aws:s3:::aws-ssm-${AWS::Region}/*'
-                  - !Sub 'arn:aws:s3:::aws-windows-downloads-${AWS::Region}/*'
-                  - !Sub 'arn:aws:s3:::amazon-ssm-${AWS::Region}/*'
-                  - !Sub 'arn:aws:s3:::amazon-ssm-packages-${AWS::Region}/*'
-                  - !Sub 'arn:aws:s3:::${AWS::Region}-birdwatcher-prod/*'
-                  - !Sub 'arn:aws:s3:::patch-baseline-snapshot-${AWS::Region}/*'
-                  - !Sub "arn:aws:s3:::${ConfigBucket}/*"
-                  - !Sub "arn:aws:s3:::${WebBucketName}/${WebBucketKey}"
+                  - !Sub 'arn:${AWS::Partition}:s3:::aws-ssm-${AWS::Region}/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::aws-windows-downloads-${AWS::Region}/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::amazon-ssm-${AWS::Region}/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::amazon-ssm-packages-${AWS::Region}/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${AWS::Region}-birdwatcher-prod/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::patch-baseline-snapshot-${AWS::Region}/*'
+                  - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::${WebBucketName}/${WebBucketKey}"
                 Effect: Allow
           PolicyName: ssm-custom-s3-policy
         - PolicyDocument:
@@ -203,7 +210,7 @@ Resources:
               - Action:
                   - s3:ListBucket
                 Resource: 
-                  - !Sub "arn:aws:s3:::${ConfigBucket}"
+                  - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}"
                 Effect: Allow
           PolicyName: s3-instance-bucket-policy
       Path: /
@@ -236,8 +243,8 @@ Resources:
               Action:
                 - ssm:StartAutomationExecution
               Resource:
-                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
-                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
+                - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${RemoveConfigurationDocName}:$DEFAULT'
+                - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SetupConfigurationDocName}:$DEFAULT'
             - Effect: Allow
               Action:
                 - iam:PassRole
@@ -285,6 +292,15 @@ Resources:
       SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
   AutoscalingRole:
     Condition: ECSDeploy
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+            - EIAMPolicyWildcardResource
+          ignore_reasons:
+            EIAMPolicyActionWildcard: Multiple actions are needed for manipulation
+            EIAMPolicyWildcardResource: Multiple actions are needed for manipulation
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -310,6 +326,15 @@ Resources:
                 Resource: '*'
   ECSServiceRole:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+            - EIAMPolicyWildcardResource
+          ignore_reasons:
+            EIAMPolicyActionWildcard: Multiple actions are needed for manipulation
+            EIAMPolicyWildcardResource: Multiple actions are needed for manipulation
     Condition: ECSDeploy
     Properties:
       AssumeRolePolicyDocument:

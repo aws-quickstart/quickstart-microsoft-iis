@@ -5,7 +5,7 @@ Description: >-
   an existing VPC that was built using the sample reference architecture titled:
   "Modular and scalable VPC architecture" **WARNING** This template creates
   Amazon EC2 Windows instance and related resources. You will be billed for the AWS
-  resources used if you create a stack from this template. QS(0003)
+  resources used if you create a stack from this template. (qs-1spjhsd41)
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
