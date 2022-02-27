@@ -42,38 +42,38 @@ project:
   build_submodules: false
   package_lambda: false
 tests:
-  test-scenario1:
-    template: ./templates/iis-main.template.yaml
-    regions:
-    - us-east-1
-    - eu-west-1
-    parameters:
-      ADScenarioType: AWS Directory Service for Microsoft AD (Enterprise Edition)
-      AvailabilityZones: $[taskcat_genaz_2]
-      KeyPairName: $[taskcat_getkeypair]
-      QSS3BucketRegion: $[taskcat_current_region]
-      ELBSchemeParameter: internet-facing
-      ASGDesiredCapacity: 2
-      ASGMaxSize: 3
-      ASGMinSize: 1
-      WebAccessCIDR: 10.0.0.0/16
-      DeploymentType: ECS
-  test-scenario2:
-    template: ./templates/iis-main.template.yaml
-    regions:
-    - ap-southeast-1
-    - us-east-2
-    parameters:
-      ADScenarioType: Microsoft AD on Amazon EC2
-      AvailabilityZones: $[taskcat_genaz_2]
-      KeyPairName: $[taskcat_getkeypair]
-      QSS3BucketRegion: $[taskcat_current_region]
-      ELBSchemeParameter: internet-facing
-      ASGDesiredCapacity: 4
-      ASGMaxSize: 5
-      ASGMinSize: 2
-      WebAccessCIDR: 10.0.0.0/16
-      DeploymentType: ECS
+#  test-scenario1:
+#    template: ./templates/iis-main.template.yaml
+#    regions:
+#    - us-east-1
+#    - eu-west-1
+#    parameters:
+#      ADScenarioType: AWS Directory Service for Microsoft AD (Enterprise Edition)
+#      AvailabilityZones: $[taskcat_genaz_2]
+#      KeyPairName: $[taskcat_getkeypair]
+#      QSS3BucketRegion: $[taskcat_current_region]
+#      ELBSchemeParameter: internet-facing
+#      ASGDesiredCapacity: 2
+#      ASGMaxSize: 3
+#      ASGMinSize: 1
+#      WebAccessCIDR: 10.0.0.0/16
+#      DeploymentType: ECS
+#  test-scenario2:
+#    template: ./templates/iis-main.template.yaml
+#    regions:
+#    - ap-southeast-1
+#    - us-east-2
+#    parameters:
+#      ADScenarioType: Microsoft AD on Amazon EC2
+#      AvailabilityZones: $[taskcat_genaz_2]
+#      KeyPairName: $[taskcat_getkeypair]
+#      QSS3BucketRegion: $[taskcat_current_region]
+#      ELBSchemeParameter: internet-facing
+#      ASGDesiredCapacity: 4
+#      ASGMaxSize: 5
+#      ASGMinSize: 2
+#      WebAccessCIDR: 10.0.0.0/16
+#      DeploymentType: ECS
   test-scenario3:
     template: ./templates/iis-main.template.yaml
     regions:
