@@ -435,7 +435,7 @@ Conditions:
     - !Equals
       - !Ref NumberOfRDGWHosts
       - '0'
-  UseAWSDirectoryServiceEE: !Equals
+  UseADonEC2: !Equals
       - !Ref 'ADScenarioType'
       - Microsoft AD on Amazon EC2
   UseELBPublicSubnets: !Equals
@@ -483,7 +483,7 @@ Resources:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/templates/${QSADTemplate}
         - QSADTemplate: !If
-            - UseAWSDirectoryServiceEE
+            - UseADonEC2
             - ad-1.template
             - ad-3.template
           S3Region: !If
@@ -495,7 +495,7 @@ Resources:
             - !Sub '${QSS3BucketName}-${AWS::Region}'
             - !Ref QSS3BucketName
       Parameters: !If
-        - UseAWSDirectoryServiceEE
+        - UseADonEC2
         - ADServer1InstanceType: !Ref 'ADServer1InstanceType'
           ADServer1NetBIOSName: !Ref 'ADServer1NetBIOSName'
           ADServer1PrivateIP: !Ref 'ADServer1PrivateIP'
@@ -543,9 +543,9 @@ Resources:
       Parameters:
         DomainAdminPassword: !Ref 'DomainAdminPassword'
         DomainAdminUser: !If
-          - UseAWSDirectoryServiceEE
-          - admin
+          - UseADonEC2
           - !Ref 'DomainAdminUser'
+          - admin
         DomainDNSName: !Ref 'DomainDNSName'
         DomainMemberSGID: !GetAtt 'ADStack.Outputs.DomainMemberSGID'
         DomainNetBIOSName: !Ref 'DomainNetBIOSName'
