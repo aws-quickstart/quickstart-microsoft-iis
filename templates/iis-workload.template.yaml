@@ -109,7 +109,7 @@ Parameters:
   DeploymentType:
     Type: String
     Description: Deploy IIS on EC2 Or ECS
-    Default: ECS
+    Default: EC2
     AllowedValues:
       - EC2
       - ECS
