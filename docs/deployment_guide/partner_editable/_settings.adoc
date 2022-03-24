@@ -1,0 +1,14 @@
+:quickstart-project-name: quickstart-microsoft-iis
+:quickstart-github-org: aws-quickstart
+:partner-product-name: Internet Information Services
+:partner-product-short-name: IIS
+//:partner-company-name: Example Company Name, Ltd.
+:doc-month: March
+:doc-year: 2022
+//:partner-contributors: John Smith, {partner-company-name}
+// :other-contributors: Akua Mansa, Trek10
+//:aws-contributors: Janine Singh, AWS IoT Partner team
+:aws-ia-contributors: Aaron Lima, Jonthan Lozano, and Syed Ahmad, AWS Integration and Automation
+:deployment_time: 1 hour
+:default_deployment_region: us-east-1
+// :private_repo:

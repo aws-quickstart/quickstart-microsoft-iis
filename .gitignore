@@ -3,3 +3,4 @@
 taskcat_outputs/*
 .taskcat/*
 .taskcat_overrides.yml
+.idea

@@ -11,6 +11,7 @@ general:
     DomainAdminUser: Admin
     DomainDNSName: test.com
     DomainNetBIOSName: test
+    ECSImage: "microsoft/iis"
     NumberOfAZs: '2'
     NumberOfRDGWHosts: '0'
     PrivateSubnet1CIDR: 10.0.0.0/19
@@ -25,6 +26,7 @@ general:
     RDGWCIDR: 10.0.0.0/16
     RDGWInstanceType: t2.large
     WebAccessCIDR: 10.0.0.0/16
+    QSS3BucketName: $[taskcat_autobucket]
 project:
   name: quickstart-microsoft-iis
   owner: quickstart-eng@amazon.com
@@ -40,40 +42,38 @@ project:
   build_submodules: false
   package_lambda: false
 tests:
-  test-scenario1:
-    template: ./templates/iis-main.template.yaml
-    regions:
-    - us-east-1
-    - eu-west-1
-    - ap-northeast-1
-    parameters:
-      ADScenarioType: AWS Directory Service for Microsoft AD (Enterprise Edition)
-      AvailabilityZones: $[taskcat_genaz_2]
-      KeyPairName: $[taskcat_getkeypair]
-      QSS3BucketName: $[taskcat_autobucket]
-      QSS3BucketRegion: $[taskcat_current_region]
-      ELBSchemeParameter: internet-facing
-      ASGDesiredCapacity: 2
-      ASGMaxSize: 3
-      ASGMinSize: 1
-      WebAccessCIDR: 10.0.0.0/16
-  test-scenario2:
-    template: ./templates/iis-main.template.yaml
-    regions:
-    - ap-southeast-1
-    - us-east-2
-    - eu-central-1
-    parameters:
-      ADScenarioType: Microsoft AD on Amazon EC2
-      AvailabilityZones: $[taskcat_genaz_2]
-      KeyPairName: $[taskcat_getkeypair]
-      QSS3BucketName: $[taskcat_autobucket]
-      QSS3BucketRegion: $[taskcat_current_region]
-      ELBSchemeParameter: internet-facing
-      ASGDesiredCapacity: 4
-      ASGMaxSize: 5
-      ASGMinSize: 2
-      WebAccessCIDR: 10.0.0.0/16
+#  test-scenario1:
+#    template: ./templates/iis-main.template.yaml
+#    regions:
+#    - us-east-1
+#    - eu-west-1
+#    parameters:
+#      ADScenarioType: AWS Directory Service for Microsoft AD (Enterprise Edition)
+#      AvailabilityZones: $[taskcat_genaz_2]
+#      KeyPairName: $[taskcat_getkeypair]
+#      QSS3BucketRegion: $[taskcat_current_region]
+#      ELBSchemeParameter: internet-facing
+#      ASGDesiredCapacity: 2
+#      ASGMaxSize: 3
+#      ASGMinSize: 1
+#      WebAccessCIDR: 10.0.0.0/16
+#      DeploymentType: ECS
+#  test-scenario2:
+#    template: ./templates/iis-main.template.yaml
+#    regions:
+#    - ap-southeast-1
+#    - us-east-2
+#    parameters:
+#      ADScenarioType: Microsoft AD on Amazon EC2
+#      AvailabilityZones: $[taskcat_genaz_2]
+#      KeyPairName: $[taskcat_getkeypair]
+#      QSS3BucketRegion: $[taskcat_current_region]
+#      ELBSchemeParameter: internet-facing
+#      ASGDesiredCapacity: 4
+#      ASGMaxSize: 5
+#      ASGMinSize: 2
+#      WebAccessCIDR: 10.0.0.0/16
+#      DeploymentType: ECS
   test-scenario3:
     template: ./templates/iis-main.template.yaml
     regions:
@@ -85,8 +85,26 @@ tests:
       KeyPairName: $[taskcat_getkeypair]
       QSS3BucketName: $[taskcat_autobucket]
       QSS3BucketRegion: $[taskcat_current_region]
-      ELBSchemeParameter: internal
+      ELBSchemeParameter: internet-facing
       ASGDesiredCapacity: 3
       ASGMaxSize: 4
       ASGMinSize: 2
       WebAccessCIDR: 10.0.0.0/16
+      DeploymentType: EC2
+  test-scenario4:
+    template: ./templates/iis-main.template.yaml
+    regions:
+    - eu-central-1
+    - ap-northeast-1
+    parameters:
+      ADScenarioType: AWS Directory Service for Microsoft AD (Enterprise Edition)
+      ASGDesiredCapacity: 3
+      ASGMaxSize: 4
+      ASGMinSize: 2
+      AvailabilityZones: $[taskcat_genaz_2]
+      ELBSchemeParameter: internet-facing
+      KeyPairName: $[taskcat_getkeypair]
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3BucketRegion: $[taskcat_current_region]
+      WebAccessCIDR: 10.0.0.0/16
+      DeploymentType: EC2

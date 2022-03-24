@@ -1,11 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: This AWS CloudFormation template demonstrates one way to configure Windows workloads in Auto Scaling groups on the AWS Cloud. It installs and configures IIS to display a simple static page, with Amazon CloudWatch collecting metrics and compiling logs and AWS Systems Manager configuring the instances. Scenario 1 launches a scalable IIS environment based on a launch template, Application Load Balancer, and Auto Scaling group. Configuration while scaling is handled by lifecycle hooks, Amazon EventBridge, and AWS System Manager automation. (qs-1r91fg4hm)
+Description: >-
+  This AWS CloudFormation template demonstrates one way to configure Windows workloads in Auto Scaling groups on the AWS Cloud.
+  It installs and configures IIS to display a simple static page, with Amazon CloudWatch collecting metrics and compiling logs
+  and AWS Systems Manager configuring the instances. Scenario 1 launches a scalable IIS environment based on a launch template,
+  Application Load Balancer, and Auto Scaling group. Configuration while scaling is handled by lifecycle hooks,
+  Amazon EventBridge, and AWS System Manager automation. (qs-1r91fg4hm)
 Metadata:
   QuickStartDocumentation:
     EntrypointName: Deploy into an existing VPC
     Order: "2"
   AWS::CloudFormation::Interface:
     ParameterGroups:
+      - Label:
+          default: Deployment Type
+        Parameters:
+          - DeploymentType
+          - ECSImage
       - Label:
           default: Active Directory information
         Parameters:
@@ -20,8 +30,13 @@ Metadata:
           - ASGMaxSize
           - ASGMinSize
           - ELBSchemeParameter
-          - WebAccessCIDR
           - IISServerInstanceType
+          - WebAccessCIDR
+      - Label:
+          default: IIS Webpage
+        Parameters:
+          - WebBucketName
+          - WebBucketKey
       - Label:
           default: Network configuration
         Parameters:
@@ -35,7 +50,6 @@ Metadata:
           default: AWS Quick Start configuration
         Parameters:
           - QSS3BucketName
-          - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
       ASGDesiredCapacity:
@@ -44,6 +58,8 @@ Metadata:
         default: Auto Scaling group maximum size
       ASGMinSize:
         default: Auto Scaling group minimum size
+      DeploymentType:
+        default: Deployment type for IIS
       DomainDNSName:
         default: Domain DNS name
       DomainNetBIOSName:
@@ -54,6 +70,8 @@ Metadata:
         default: Domain administrator password
       DomainMemberSecurityGroup:
         default: Security group with access to domain
+      ECSImage:
+        default: ECS Container Image
       ELBSchemeParameter:
         default: Elastic Load Balancing scheme
       ELBSubnet1ID:
@@ -68,12 +86,14 @@ Metadata:
         default: Private subnet
       QSS3BucketName:
         default: Quick Start S3 bucket name
-      QSS3BucketRegion:
-        default: Quick Start S3 bucket Region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       WebAccessCIDR:
         default: Elastic Load Balancer CIDR range
+      WebBucketName:
+        default: S3 Bucket Webpage Location
+      WebBucketKey:
+        default: S3 Key Webpage Location
       VPCID:
         default: VPC ID for workload
 Parameters:
@@ -86,6 +106,13 @@ Parameters:
   ASGDesiredCapacity:
     Type: Number
     Description: Desired capacity of the Auto Scaling group.
+  DeploymentType:
+    Type: String
+    Description: Deploy IIS on EC2 Or ECS
+    Default: EC2
+    AllowedValues:
+      - EC2
+      - ECS
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: Password for the domain administrator. It must be at least 8 characters and contain letters, numbers, and symbols.
@@ -118,6 +145,10 @@ Parameters:
   DomainMemberSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Choose the EC2 security group that allows for Active Directory communication.
+  ECSImage:
+    Type: String
+    Default: "microsoft/iis"
+    Description: ECS Container Image for Windows. Only needed if ECS deployment type is used
   ELBSchemeParameter:
     Type: String
     Default: internet-facing
@@ -203,10 +234,6 @@ Parameters:
       can include numbers, lowercase letters, uppercase letters, and hyphens (-).
       It cannot start or end with a hyphen (-).
     Type: String
-  QSS3BucketRegion:
-    Default: us-east-1
-    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Specify this value when using your own S3 bucket.
-    Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
     ConstraintDescription: Can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/).
@@ -217,9 +244,27 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Description: The CIDR IP range that is permitted to access the Elastic Load Balancers.
     Type: String
+  WebBucketName:
+    Type: String
+    Description: Bucket name where html file is located for iis. If left blank, a sample page will be used.
+    Default: "" 
+  WebBucketKey:
+    Type: String
+    Description: Bucket Key where html/htm file is located for iis. Only user if WebBucketName specified, otherwise leave default.
+    Default: "webfiles/index.html"
   VPCID:
     Description: ID of the VPC (e.g., vpc-0343606e).
     Type: AWS::EC2::VPC::Id
+Conditions:
+  UseDefault: !Equals 
+    - !Ref WebBucketName
+    - ''
+  ECSDeploy: !Equals 
+    - !Ref DeploymentType
+    - 'ECS'
+  EC2Deploy: !Equals 
+    - !Ref DeploymentType
+    - 'EC2'
 Resources:
   ConfigBucket:
     Type: AWS::S3::Bucket
@@ -243,10 +288,16 @@ Resources:
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
-        WebAccessCIDR: !Ref 'WebAccessCIDR'
-        VPCID: !Ref 'VPCID'
-        SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
+        ECSClusterName: !If 
+          - ECSDeploy
+          - !Sub ECSCluster-${AWS::StackName}
+          - ''
         RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
+        SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
+        VPCID: !Ref 'VPCID'
+        WebAccessCIDR: !Ref 'WebAccessCIDR'
+        WebBucketKey: !Ref WebBucketKey
+        WebBucketName: !If [UseDefault, !Ref ConfigBucket, !Ref WebBucketName] 
   AutomationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -254,35 +305,74 @@ Resources:
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
-        WriteS3LambdaRoleArn: !GetAtt 'SecurityStack.Outputs.WriteS3LambdaRoleArn'
-        SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
+        ECSClusterName: !If 
+          - ECSDeploy
+          - !Sub ECSCluster-${AWS::StackName}
+          - '' 
         RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
-  WebAutoScaleStack:
+        SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
+        WebBucketKey: !Ref WebBucketKey
+        WebBucketName: !If [UseDefault, !Ref ConfigBucket, !Ref WebBucketName] 
+        WriteS3LambdaRoleArn: !GetAtt 'SecurityStack.Outputs.WriteS3LambdaRoleArn'
+  EC2WebAutoScaleStack:
+    Condition: EC2Deploy
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/asg-lch.template.yaml'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/ec2-asg-lch.template.yaml'
       Parameters:
+        ALBListenersSecurityGroup: !GetAtt 'SecurityStack.Outputs.ALBListenersSecurityGroup'
+        ALBSecurityGroup: !GetAtt 'SecurityStack.Outputs.ALBSecurityGroup'
+        ASGDesiredCapacity: !Ref 'ASGDesiredCapacity'
+        ASGMaxSize: !Ref 'ASGMaxSize'
+        ASGMinSize: !Ref 'ASGMinSize'
+        AutoScalingGroupName: !GetAtt 'SecurityStack.Outputs.AutoScalingGroupName'
         ConfigBucket: !Ref 'ConfigBucket'
-        IISServerInstanceType: !Ref 'IISServerInstanceType'
-        DomainMemberSecurityGroup: !Ref 'DomainMemberSecurityGroup'
         DomainDNSName: !Ref 'DomainDNSName'
-        VPCID: !Ref 'VPCID'
+        DomainMemberSecurityGroup: !Ref 'DomainMemberSecurityGroup'
+        ELBSchemeParameter: !Ref 'ELBSchemeParameter'
         ELBSubnet1ID: !Ref 'ELBSubnet1ID'
         ELBSubnet2ID: !Ref 'ELBSubnet2ID'
-        ELBSchemeParameter: !Ref 'ELBSchemeParameter'
-        ASGDesiredCapacity: !Ref 'ASGDesiredCapacity'
-        ASGMinSize: !Ref 'ASGMinSize'
-        ASGMaxSize: !Ref 'ASGMaxSize'
-        WorkloadSubnet1ID: !Ref 'PrivateSubnet1ID'
-        WorkloadSubnet2ID: !Ref 'PrivateSubnet2ID'
+        EventBridgeSSMAutoRole: !GetAtt 'SecurityStack.Outputs.EventBridgeSSMAutoRole'
         ExecutionResourceArn: !GetAtt 'SecurityStack.Outputs.ExecutionResourceArn'
-        ExecutionRoleName: !GetAtt 'SecurityStack.Outputs.ExecutionRoleName'
-        SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
+        IISServerInstanceType: !Ref 'IISServerInstanceType'
         RemoveConfigurationDocName: !GetAtt 'AutomationStack.Outputs.RemoveConfigurationDocName'
         SSMInstanceProfileName: !GetAtt 'SecurityStack.Outputs.SSMInstanceProfileName'
-        EventBridgeSSMAutoRole: !GetAtt 'SecurityStack.Outputs.EventBridgeSSMAutoRole'
-        ALBSecurityGroup: !GetAtt 'SecurityStack.Outputs.ALBSecurityGroup'
+        SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
+        VPCID: !Ref 'VPCID'
+        WorkloadSubnet1ID: !Ref 'PrivateSubnet1ID'
+        WorkloadSubnet2ID: !Ref 'PrivateSubnet2ID'
+  ECSWinNodesStack:
+    Condition: ECSDeploy
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/ecs-asg-lch.template.yaml'
+      Parameters:
         ALBListenersSecurityGroup: !GetAtt 'SecurityStack.Outputs.ALBListenersSecurityGroup'
+        ALBSecurityGroup: !GetAtt 'SecurityStack.Outputs.ALBSecurityGroup'
+        ASGDesiredCapacity: !Ref 'ASGDesiredCapacity'
+        ASGMaxSize: !Ref 'ASGMaxSize'
+        ASGMinSize: !Ref 'ASGMinSize'
+        AutoScalingGroupName: !GetAtt 'SecurityStack.Outputs.AutoScalingGroupName'
+        AutoscalingRole: !GetAtt 'SecurityStack.Outputs.AutoscalingRole'
+        ConfigBucket: !Ref 'ConfigBucket'
+        DomainDNSName: !Ref DomainDNSName
+        DomainMemberSecurityGroup: !Ref 'DomainMemberSecurityGroup'
+        ECSClusterName: !Sub ECSCluster-${AWS::StackName}
+        ECSServiceRole: !GetAtt 'SecurityStack.Outputs.ECSServiceRole'
+        ECSImage: !Ref ECSImage
+        ECSTaskRole: !GetAtt 'SecurityStack.Outputs.ECSTaskRole'
+        ELBSchemeParameter: !Ref 'ELBSchemeParameter'
+        ELBSubnet1ID: !Ref 'ELBSubnet1ID'
+        ELBSubnet2ID: !Ref 'ELBSubnet2ID'
+        EventBridgeSSMAutoRole: !GetAtt 'SecurityStack.Outputs.EventBridgeSSMAutoRole'
+        ExecutionResourceArn: !GetAtt 'SecurityStack.Outputs.ExecutionResourceArn'
+        IISServerInstanceType: !Ref IISServerInstanceType
+        RemoveConfigurationDocName: !GetAtt 'AutomationStack.Outputs.RemoveConfigurationDocName'
+        SSMInstanceProfileName: !GetAtt 'SecurityStack.Outputs.SSMInstanceProfileName'
+        SetupConfigurationDocName: !GetAtt 'AutomationStack.Outputs.SetupConfigurationDocName'
+        VPCID: !Ref 'VPCID'
+        WorkloadSubnet1ID: !Ref 'PrivateSubnet1ID'
+        WorkloadSubnet2ID: !Ref 'PrivateSubnet2ID'
 Outputs:
   ConfigBucket:
     Value: !Ref ConfigBucket

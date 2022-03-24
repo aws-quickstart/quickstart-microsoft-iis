@@ -1,6 +1,18 @@
 // Add steps as necessary for accessing the software, post-configuration, and testing. Don’t include full usage instructions for your software, but add links to your product documentation for that information.
 //Should any sections not be applicable, remove them
 
+== Post-deployment steps
+
+=== Run Windows Updates
+
+In order to ensure the deployed servers' operating systems and installed applications have the latest Microsoft updates, run Windows Update on each server.
+
+1. Create an RDP session from the Remote Desktop Gateway server to each deployed server.
+2. Open the *Settings* application.
+3. Open *Update & Security*.
+4. Click *Check for updates*.
+5. Install any updates and reboot if necessary.
+
 === Testing the deployment
 // If steps are required to test the deployment, add them here. If not, remove the heading
 :xrefstyle: short
@@ -9,7 +21,7 @@ To test the deployment, ensure that your IP address is entered in the WebAccessC
 [#sample-web-page]
 .Test page
 [link=images/SampleWebPage.png]
-image::../images/SampleWebPage.png[Sample Web Page,width=100%,height=100%]
+image::../docs/deployment_guide/images/SampleWebPage.png[Sample Web Page,width=100%,height=100%]
 
 NOTE: If you are unable to connect to the test page, review the security groups for the Elastic Load Balancers and verify that the CIDR ranges are correct.
 
@@ -47,7 +59,7 @@ aws ssm start-session --target "<your-instance-id>" --document-name AWS-StartPor
 [#start-session]
 .CLI Command to port forward a local port to RDP on an EC2 Instance
 [link=images/clisessionmanager.png]
-image::../images/clisessionmanager.png[Start Session,width=100%,height=100%]
+image::../docs/deployment_guide/images/clisessionmanager.png[Start Session,width=100%,height=100%]
 
 [start=2]
 . When the session is established, open the Remote Desktop application, and enter localhost:56788 (or any port number that's not currently in use.)
@@ -56,7 +68,7 @@ image::../images/clisessionmanager.png[Start Session,width=100%,height=100%]
 [#rdp-session]
 .Connecting to localhost:56788
 [link=images/rdpgraphic.png]
-image::../images/rdpgraphic.png[RDP,width=100%,height=100%]
+image::../docs/deployment_guide/images/rdpgraphic.png[RDP,width=100%,height=100%]
 
 [start=3]
 . When the client prompts you for credentials, enter the appropriate password to log in.
@@ -64,7 +76,7 @@ image::../images/rdpgraphic.png[RDP,width=100%,height=100%]
 [#connected-EC2]
 .Connected to EC2 instance with RDP
 [link=images/loggedin.png]
-image::../images/loggedin.png[RDP,width=100%,height=100%]
+image::../docs/deployment_guide/images/loggedin.png[RDP,width=100%,height=100%]
 
 [start=4]
 . When you finish, end your Remote Desktop session and disconnect.
@@ -72,7 +84,7 @@ image::../images/loggedin.png[RDP,width=100%,height=100%]
 [#disconnected-session]
 .Disconnect Session
 [link=images/rdp5.png]
-image::../images/rdp5.png[RDP,width=100%,height=100%]
+image::../docs/deployment_guide/images/rdp5.png[RDP,width=100%,height=100%]
 
 == Post-deployment steps
 If you want to modify this Quick Start see the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml] template. This AWS Cloudformation template uploads the MOF files and creates the automation documents that are triggered by the Auto Scaling group's lifecycle hooks. 

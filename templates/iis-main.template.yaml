@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   This template deploys IIS in an Auto Scaling group using
-  AWS services such as AWS Systems Managers, Amazon EC2 Auto Scaling, and Amazon CloudWatch. The main template deploys Active Directory
-  and a scalable VPC. The workload template deploys into an existing Active Directory (AD) and VPC environment. 
+  AWS services such as AWS Systems Managers, Amazon CloudWatch, Amazon Elastic Compute Cloud (EC2) and/or Amazon Elastic Container Service. 
+  The main template deploys Active Directory and a scalable VPC. The workload template deploys into an existing Active Directory (AD) and VPC environment.
   **WARNING**
-  This template creates Amazon EC2 Windows instances and related resources. You will
+  This template creates Amazon EC2 Windows instances, ECS containers and related resources. You will
   be billed for the AWS resources used if you create a stack from this template. (qs-1r91fg4hu)
 Metadata:
   QuickStartDocumentation:
@@ -12,6 +12,11 @@ Metadata:
     Order: "1"
   AWS::CloudFormation::Interface:
     ParameterGroups:
+      - Label:
+          default: Deployment Type
+        Parameters:
+          - DeploymentType
+          - ECSImage
       - Label:
           default: Active Directory configuration
         Parameters:
@@ -61,6 +66,11 @@ Metadata:
           - WebAccessCIDR
           - IISServerInstanceType
       - Label:
+          default: IIS Webpage
+        Parameters:
+          - WebBucketName
+          - WebBucketKey
+      - Label:
           default: AWS Quick Start configuration
         Parameters:
           - QSS3BucketName
@@ -89,6 +99,8 @@ Metadata:
         default: Auto Scaling group minimum instance size
       AvailabilityZones:
         default: Availability Zones
+      DeploymentType:
+        default: Deployment type for IIS
       DomainAdminPassword:
         default: Domain administrator password
       DomainAdminUser:
@@ -97,6 +109,8 @@ Metadata:
         default: Domain DNS name
       DomainNetBIOSName:
         default: Domain NetBIOS name
+      ECSImage:
+        default: ECS Windows Container Image
       ELBSchemeParameter:
         default: Elastic Load Balancing scheme
       IISServerInstanceType:
@@ -131,6 +145,10 @@ Metadata:
         default: Allowed RD gateway external access CIDR
       WebAccessCIDR:
         default: Elastic Load Balancers CIDR range
+      WebBucketName:
+        default: S3 Bucket Webpage Location
+      WebBucketKey:
+        default: S3 Key Webpage Location
       VPCCIDR:
         default: VPC CIDR
 Parameters:
@@ -138,7 +156,7 @@ Parameters:
     AllowedValues:
       - AWS Directory Service for Microsoft AD (Enterprise Edition)
       - Microsoft AD on Amazon EC2
-    Default: AWS Directory Service for Microsoft Active Directory (Enterprise Edition)
+    Default: AWS Directory Service for Microsoft AD (Enterprise Edition)
     Description: Select the type of deployment to use, either AWS Directory Service for Microsoft Active Directory or managing your own Amazon EC2 Active Directory instances.
     Type: String
   ADServer1InstanceType:
@@ -211,6 +229,13 @@ Parameters:
     Description: >-
       List of Availability Zones to use for the subnets in the VPC. The logical order is preserved. At least two Availability Zones must be provided.
     Type: List<AWS::EC2::AvailabilityZone::Name>
+  DeploymentType:
+    Type: String
+    Description: Deploy IIS on EC2 or ECS
+    Default: EC2
+    AllowedValues:
+      - EC2
+      - ECS
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: Password for the domain administrator. Must be at least 8 characters containing letters, numbers, and symbols.
@@ -240,13 +265,17 @@ Parameters:
     MaxLength: '15'
     MinLength: '1'
     Type: String
+  ECSImage:
+    Type: String
+    Default: "microsoft/iis"
+    Description: ECS Container Image for Windows. Only needed if ECS deployment type is used
   ELBSchemeParameter:
     Type: String
+    Description: Choose whether the Elastic Load Balancer is public or private.
     Default: internet-facing
     AllowedValues:
       - internet-facing
       - internal
-    Description: Choose whether the Elastic Load Balancer is public or private.
   IISServerInstanceType:
     AllowedValues:
       - t3.micro
@@ -382,7 +411,18 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter, in the form x.x.x.x/x.
     Description: The CIDR IP range that is permitted to access the Elastic Load Balancers.
+    Type: String  
+  WebBucketName:
     Type: String
+    Description: Bucket name where html file is located for iis. If left blank, a sample page will be used.
+    Default: "" 
+  WebBucketKey:
+    Type: String
+    AllowedPattern: ^[0-9a-zA-Z-/.]*$
+    ConstraintDescription: Can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slashes (/).
+    Description: Bucket Key where html file is located for iis. Only change S3 Bucket Wepage is specified, otherwise leave as default.
+    Default: "webfiles/index.html"
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter, in the form x.x.x.x/16-28.
@@ -395,7 +435,7 @@ Conditions:
     - !Equals
       - !Ref NumberOfRDGWHosts
       - '0'
-  UseAWSDirectoryServiceEE: !Equals
+  UseADonEC2: !Equals
       - !Ref 'ADScenarioType'
       - Microsoft AD on Amazon EC2
   UseELBPublicSubnets: !Equals
@@ -410,7 +450,7 @@ Resources:
     Properties:
       TemplateURL:
         Fn::Sub:
-          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template'
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml'
           - S3Region: !If
               - UsingDefaultBucket
               - !Ref AWS::Region
@@ -423,7 +463,6 @@ Resources:
         AvailabilityZones: !Join
           - ','
           - !Ref 'AvailabilityZones'
-        KeyPairName: !Ref 'KeyPairName'
         NumberOfAZs: !Ref 'NumberOfAZs'
         PrivateSubnet1ACIDR: !Ref 'PrivateSubnet1CIDR'
         PrivateSubnet2ACIDR: !Ref 'PrivateSubnet2CIDR'
@@ -444,7 +483,7 @@ Resources:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/templates/${QSADTemplate}
         - QSADTemplate: !If
-            - UseAWSDirectoryServiceEE
+            - UseADonEC2
             - ad-1.template
             - ad-3.template
           S3Region: !If
@@ -456,7 +495,7 @@ Resources:
             - !Sub '${QSS3BucketName}-${AWS::Region}'
             - !Ref QSS3BucketName
       Parameters: !If
-        - UseAWSDirectoryServiceEE
+        - UseADonEC2
         - ADServer1InstanceType: !Ref 'ADServer1InstanceType'
           ADServer1NetBIOSName: !Ref 'ADServer1NetBIOSName'
           ADServer1PrivateIP: !Ref 'ADServer1PrivateIP'
@@ -470,7 +509,6 @@ Resources:
           KeyPairName: !Ref 'KeyPairName'
           PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
-          EntCaServerSubnet: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3BucketRegion: !Ref 'QSS3BucketRegion'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-activedirectory/'
@@ -505,9 +543,9 @@ Resources:
       Parameters:
         DomainAdminPassword: !Ref 'DomainAdminPassword'
         DomainAdminUser: !If
-          - UseAWSDirectoryServiceEE
-          - admin
+          - UseADonEC2
           - !Ref 'DomainAdminUser'
+          - admin
         DomainDNSName: !Ref 'DomainDNSName'
         DomainMemberSGID: !GetAtt 'ADStack.Outputs.DomainMemberSGID'
         DomainNetBIOSName: !Ref 'DomainNetBIOSName'
@@ -518,8 +556,8 @@ Resources:
         QSS3BucketName: !Ref 'QSS3BucketName'
         QSS3BucketRegion: !Ref 'QSS3BucketRegion'
         QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-microsoft-rdgateway/'
-        RDGWInstanceType: !Ref 'RDGWInstanceType'
         RDGWCIDR: !Ref 'RDGWCIDR'
+        RDGWInstanceType: !Ref 'RDGWInstanceType'
         VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
   IISStack:
     Type: AWS::CloudFormation::Stack
@@ -535,46 +573,26 @@ Resources:
               - UsingDefaultBucket
               - !Sub '${QSS3BucketName}-${AWS::Region}'
               - !Ref QSS3BucketName
-      Parameters: !If
-        - UseELBPublicSubnets
-        - ASGDesiredCapacity: !Ref ASGDesiredCapacity
+      Parameters: 
+          ASGDesiredCapacity: !Ref ASGDesiredCapacity
           ASGMaxSize: !Ref ASGMaxSize
           ASGMinSize: !Ref ASGMinSize
+          DeploymentType: !Ref DeploymentType
           DomainAdminPassword: !Ref 'DomainAdminPassword'
           DomainAdminUser: !Ref 'DomainAdminUser'
           DomainDNSName: !Ref 'DomainDNSName'
           DomainMemberSecurityGroup: !GetAtt 'ADStack.Outputs.DomainMemberSGID'
           DomainNetBIOSName: !Ref 'DomainNetBIOSName'
           ELBSchemeParameter: !Ref ELBSchemeParameter
+          ELBSubnet1ID: !If [UseELBPublicSubnets, !GetAtt VPCStack.Outputs.PublicSubnet1ID, !GetAtt VPCStack.Outputs.PrivateSubnet1AID] 
+          ELBSubnet2ID: !If [UseELBPublicSubnets, !GetAtt VPCStack.Outputs.PublicSubnet2ID, !GetAtt VPCStack.Outputs.PrivateSubnet2AID] 
+          ECSImage: !Ref ECSImage
           IISServerInstanceType: !Ref IISServerInstanceType
           PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
-          ELBSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID
-          ELBSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID
-          WebAccessCIDR: !Ref 'WebAccessCIDR'
-          VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
           QSS3BucketName: !Ref 'QSS3BucketName'
-          QSS3BucketRegion: !Ref 'QSS3BucketRegion'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}'
-        - ASGDesiredCapacity: !Ref ASGDesiredCapacity
-          ASGMaxSize: !Ref ASGMaxSize
-          ASGMinSize: !Ref ASGMinSize
-          DomainAdminPassword: !Ref 'DomainAdminPassword'
-          DomainAdminUser: !Ref 'DomainAdminUser'
-          DomainDNSName: !Ref 'DomainDNSName'
-          DomainMemberSecurityGroup: !GetAtt 'ADStack.Outputs.DomainMemberSGID'
-          DomainNetBIOSName: !Ref 'DomainNetBIOSName'
-          ELBSchemeParameter: !Ref ELBSchemeParameter
-          IISServerInstanceType: !Ref IISServerInstanceType
-          PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
-          PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
-          ELBSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
-          ELBSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
-          WebAccessCIDR: !Ref 'WebAccessCIDR'
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
-          QSS3BucketName: !Ref 'QSS3BucketName'
-          QSS3BucketRegion: !Ref 'QSS3BucketRegion'
-          QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}'
-
-
-
+          WebAccessCIDR: !Ref 'WebAccessCIDR'
+          WebBucketKey: !Ref WebBucketKey
+          WebBucketName: !Ref WebBucketName
