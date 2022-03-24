@@ -8,7 +8,7 @@
 //:partner-contributors: John Smith, {partner-company-name}
 // :other-contributors: Akua Mansa, Trek10
 //:aws-contributors: Janine Singh, AWS IoT Partner team
-:aws-ia-contributors: Aaron Lima, Jonthan Lozano, and Syed Ahmad, AWS Integration and Automation
+:aws-ia-contributors: Aaron Lima, Jonthan Lozano, and Syed Ahmad, AWS
 :deployment_time: 1 hour
 :default_deployment_region: us-east-1
 // :private_repo:
