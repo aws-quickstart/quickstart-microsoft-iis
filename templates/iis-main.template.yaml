@@ -76,6 +76,7 @@ Metadata:
           - QSS3BucketName
           - QSS3BucketRegion
           - QSS3KeyPrefix
+          - SetupAppInsightsMonitoring
     ParameterLabels:
       ADScenarioType:
         default: Active Directory scenario type
@@ -139,6 +140,8 @@ Metadata:
         default: Quick Start S3 bucket Region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
+      SetupAppInsightsMonitoring:
+        default: Setup Application Insights Monitoring
       RDGWInstanceType:
         default: RD gateway instance type
       RDGWCIDR:
@@ -378,6 +381,15 @@ Parameters:
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slashes (/).
     Type: String
+  SetupAppInsightsMonitoring:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    ConstraintDescription: Can include either true or false.
+    Default: 'false'
+    Description: Setup Application Insights monitoring for all IIS resources. This parameter
+      can include either true or false.
+    Type: String
   RDGWInstanceType:
     Default: t2.large
     AllowedValues:
@@ -447,6 +459,9 @@ Conditions:
   3AZCondition: !Equals 
       - !Ref NumberOfAZs
       - '3'
+  appInsightsMonitoring: !Equals
+      - !Ref SetupAppInsightsMonitoring
+      - 'true'
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -599,3 +614,27 @@ Resources:
           WebAccessCIDR: !Ref 'WebAccessCIDR'
           WebBucketKey: !Ref WebBucketKey
           WebBucketName: !Ref WebBucketName
+  IISResourceGroup:
+    Condition: appInsightsMonitoring
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name: 'ApplicationInsights-IISResources'
+      ResourceQuery:
+        Query:
+          TagFilters:
+            - Key: 'aws:cloudformation:logical-id'
+              Values:
+              - 'ConfigBucket'
+              - 'ALBResource'
+              - 'ASGResource'
+              - 'ECSCluster'
+              - 'TaskDefinition'
+              - 'WriteMOFFunction'
+        Type: 'TAG_FILTERS_1_0'
+  ApplicationInsightsIIS:
+    Condition: appInsightsMonitoring
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName: 'ApplicationInsights-IISResources'
+      AutoConfigurationEnabled: true
+
