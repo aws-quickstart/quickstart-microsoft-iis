@@ -622,14 +622,13 @@ Resources:
       ResourceQuery:
         Query:
           TagFilters:
-            - Key: 'aws:cloudformation:logical-id'
+            - Key: 'aws:cloudformation:stack-name'
               Values:
-              - 'ConfigBucket'
-              - 'ALBResource'
-              - 'ASGResource'
-              - 'ECSCluster'
-              - 'TaskDefinition'
-              - 'WriteMOFFunction'
+                Fn::GetAtt:
+                  - IISStack
+                  - Outputs.ECSASGStackName
+                  - Outputs.EC2ASGStackName
+                  - Outputs.IISWorkloadStackName
         Type: 'TAG_FILTERS_1_0'
   ApplicationInsightsIIS:
     Condition: appInsightsMonitoring

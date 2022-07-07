@@ -399,3 +399,20 @@ Outputs:
     Value: !Ref ConfigBucket
   DomainJoinSecrets:
     Value: !Ref DomainJoinSecrets
+  EC2WebAutoScaleStackName:
+    Value: !Ref 'EC2ASGStackName'
+    Export:
+      Fn::GetAtt:
+      - EC2WebAutoScaleStack
+      - Outputs.EC2ASGStackName
+  ECSWinNodesStackName:
+    Value: !Ref 'ECSASGStackName'
+    Export:
+      Fn::GetAtt:
+        - ECSWinNodesStack
+        - Outputs.ECSASGStackName
+  StackName:
+    Description: Stack Name of the current stack
+    Value: !Ref 'IISWorkloadStackName'
+    Export:
+      Name: !Sub "${AWS::StackName}"
