@@ -459,9 +459,6 @@ Conditions:
   3AZCondition: !Equals 
       - !Ref NumberOfAZs
       - '3'
-  appInsightsMonitoring: !Equals
-      - !Ref SetupAppInsightsMonitoring
-      - 'true'
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -610,30 +607,9 @@ Resources:
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}'
+          SetupAppInsightsMonitoring: !Ref SetupAppInsightsMonitoring
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
           WebAccessCIDR: !Ref 'WebAccessCIDR'
           WebBucketKey: !Ref WebBucketKey
           WebBucketName: !Ref WebBucketName
-  IISResourceGroup:
-    Condition: appInsightsMonitoring
-    Type: AWS::ResourceGroups::Group
-    Properties:
-      Name: 'ApplicationInsights-IISResources'
-      ResourceQuery:
-        Query:
-          TagFilters:
-            - Key: 'aws:cloudformation:stack-name'
-              Values:
-                Fn::GetAtt:
-                  - IISStack
-                  - Outputs.ECSASGStackName
-                  - Outputs.EC2ASGStackName
-                  - Outputs.IISWorkloadStackName
-        Type: 'TAG_FILTERS_1_0'
-  ApplicationInsightsIIS:
-    Condition: appInsightsMonitoring
-    Type: AWS::ApplicationInsights::Application
-    Properties:
-      ResourceGroupName: 'ApplicationInsights-IISResources'
-      AutoConfigurationEnabled: true
 

@@ -493,8 +493,6 @@ Outputs:
   ECSALB:
     Description: ALB DNS URL
     Value: !GetAtt ALBResource.DNSName
-  StackName:
+  ECSASGStackName:
     Description: Stack Name of the current stack
-    Value: !Ref 'ECSASGStackName'
-    Export:
-      Name: !Sub "${AWS::StackName}"
+    Value: !Sub "${AWS::StackName}
