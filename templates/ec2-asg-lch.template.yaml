@@ -268,5 +268,5 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-LaunchTemplateId'
   EC2ASGStackName:
-    Description: Stack Name of the current stack
+    Description: Stack name of the current stack
     Value: !Sub "${AWS::StackName}"

@@ -65,6 +65,7 @@ Metadata:
           - ELBSchemeParameter
           - WebAccessCIDR
           - IISServerInstanceType
+          - SetupAppInsightsMonitoring
       - Label:
           default: IIS Webpage
         Parameters:
@@ -76,7 +77,6 @@ Metadata:
           - QSS3BucketName
           - QSS3BucketRegion
           - QSS3KeyPrefix
-          - SetupAppInsightsMonitoring
     ParameterLabels:
       ADScenarioType:
         default: Active Directory scenario type
@@ -141,7 +141,7 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       SetupAppInsightsMonitoring:
-        default: Setup Application Insights Monitoring
+        default: Setup Application Insights monitoring
       RDGWInstanceType:
         default: RD gateway instance type
       RDGWCIDR:

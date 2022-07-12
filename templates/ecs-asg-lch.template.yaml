@@ -494,5 +494,5 @@ Outputs:
     Description: ALB DNS URL
     Value: !GetAtt ALBResource.DNSName
   ECSASGStackName:
-    Description: Stack Name of the current stack
+    Description: Stack name of the current stack
     Value: !Sub "${AWS::StackName}"

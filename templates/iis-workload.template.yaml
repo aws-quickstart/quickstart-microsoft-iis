@@ -32,6 +32,7 @@ Metadata:
           - ELBSchemeParameter
           - IISServerInstanceType
           - WebAccessCIDR
+          - SetupAppInsightsMonitoring
       - Label:
           default: IIS Webpage
         Parameters:
@@ -51,7 +52,6 @@ Metadata:
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-          - SetupAppInsightsMonitoring
     ParameterLabels:
       ASGDesiredCapacity:
         default: Auto Scaling group desired capacity
@@ -90,7 +90,7 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       SetupAppInsightsMonitoring:
-        default: Setup Application Insights Monitoring
+        default: Setup Application Insights monitoring
       WebAccessCIDR:
         default: Elastic Load Balancer CIDR range
       WebBucketName:
