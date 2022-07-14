@@ -65,6 +65,7 @@ Metadata:
           - ELBSchemeParameter
           - WebAccessCIDR
           - IISServerInstanceType
+          - SetupAppInsightsMonitoring
       - Label:
           default: IIS Webpage
         Parameters:
@@ -139,6 +140,8 @@ Metadata:
         default: Quick Start S3 bucket Region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
+      SetupAppInsightsMonitoring:
+        default: Setup Application Insights monitoring
       RDGWInstanceType:
         default: RD gateway instance type
       RDGWCIDR:
@@ -378,6 +381,15 @@ Parameters:
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slashes (/).
     Type: String
+  SetupAppInsightsMonitoring:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    ConstraintDescription: Can include either true or false.
+    Default: 'false'
+    Description: Setup Application Insights monitoring for all IIS resources. This parameter
+      can include either true or false.
+    Type: String
   RDGWInstanceType:
     Default: t2.large
     AllowedValues:
@@ -595,7 +607,9 @@ Resources:
           PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
           QSS3BucketName: !Ref 'QSS3BucketName'
           QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}'
+          SetupAppInsightsMonitoring: !Ref SetupAppInsightsMonitoring
           VPCID: !GetAtt 'VPCStack.Outputs.VPCID'
           WebAccessCIDR: !Ref 'WebAccessCIDR'
           WebBucketKey: !Ref WebBucketKey
           WebBucketName: !Ref WebBucketName
+
