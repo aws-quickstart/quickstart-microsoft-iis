@@ -466,6 +466,7 @@ Parameters:
     Description: CIDR block for the VPC.
     Type: String
 Conditions:
+  AppInsightsEnabled: !Equals [!Ref SetupAppInsightsMonitoring, true]
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   IncludeRDGW: !Not
     - !Equals
@@ -633,4 +634,3 @@ Resources:
           WebAccessCIDR: !Ref 'WebAccessCIDR'
           WebBucketKey: !Ref WebBucketKey
           WebBucketName: !Ref WebBucketName
-
