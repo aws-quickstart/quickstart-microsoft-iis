@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+ AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   This template deploys IIS in an Auto Scaling group using
   AWS services such as AWS Systems Managers, Amazon CloudWatch, Amazon Elastic Compute Cloud (EC2) and/or Amazon Elastic Container Service. 
