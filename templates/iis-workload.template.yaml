@@ -33,6 +33,7 @@ Metadata:
           - IISServerInstanceType
           - WebAccessCIDR
           - SetupAppInsightsMonitoring
+          - AppInsightsApplicationName
       - Label:
           default: IIS Webpage
         Parameters:
@@ -53,6 +54,8 @@ Metadata:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
+      AppInsightsApplicationName:
+        default: Registered application name
       ASGDesiredCapacity:
         default: Auto Scaling group desired capacity
       ASGMaxSize:
@@ -100,6 +103,12 @@ Metadata:
       VPCID:
         default: VPC ID for workload
 Parameters:
+  AppInsightsApplicationName:
+    Description: Application name to be used with AppInsights monitoring
+    Type: String
+    Default: ''
+    MaxLength: '300'
+    AllowedPattern: '^[a-zA-Z0-9\-]$*'
   ASGMinSize:
     Type: Number
     Description: Minimum instance size for the Auto Scaling group.
@@ -277,9 +286,8 @@ Conditions:
   EC2Deploy: !Equals 
     - !Ref DeploymentType
     - 'EC2'
-  appInsightsMonitoring: !Equals
-    - !Ref SetupAppInsightsMonitoring
-    - 'true'
+  appInsightsMonitoring: !Equals [!Ref SetupAppInsightsMonitoring, true]
+  UsingDefaultAppName: !Equals   [!Ref AppInsightsApplicationName, '']
 Resources:
   ConfigBucket:
     Type: AWS::S3::Bucket
@@ -413,7 +421,7 @@ Resources:
     Condition: appInsightsMonitoring
     Type: AWS::ResourceGroups::Group
     Properties:
-      Name: 'ApplicationInsights-IISResources'
+      Name: !If [UsingDefaultAppName, !Sub "ApplicationInsights-${AWS::StackName}", !Ref AppInsightsApplicationName]
       ResourceQuery:
         Query:
           TagFilters:
@@ -430,7 +438,7 @@ Resources:
     Condition: appInsightsMonitoring
     Type: AWS::ApplicationInsights::Application
     Properties:
-      ResourceGroupName: 'ApplicationInsights-IISResources'
+      ResourceGroupName: !Ref 'IISResourceGroup'
       AutoConfigurationEnabled: true
     DependsOn: IISResourceGroup
 
