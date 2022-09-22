@@ -108,7 +108,7 @@ Parameters:
     Type: String
     Default: ''
     MaxLength: '300'
-    AllowedPattern: '^[a-zA-Z0-9\-]$*'
+    AllowedPattern: '^[a-zA-Z0-9\-]*$'
   ASGMinSize:
     Type: Number
     Description: Minimum instance size for the Auto Scaling group.
