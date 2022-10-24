@@ -117,7 +117,7 @@ Parameters:
     Description: ID of the domain member security group (e.g., sg-7f16e910).
     Type: AWS::EC2::SecurityGroup::Id
   ConfigBucket:
-    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    AllowedPattern: '^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+$'
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
@@ -129,9 +129,11 @@ Parameters:
     Description: ID of the domain member security group (e.g., sg-7f16e910).
     Type: AWS::EC2::SecurityGroup::Id
   ECSClusterName:
-    AllowedPattern: '[a-zA-Z0-9\-]+'
+    AllowedPattern: '^[a-zA-Z0-9\-]+$'
     Default: ECSSample
     Description: Name of the ECS Cluster
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
   ELBSubnet1ID:
     Description: ID of the ELB subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
@@ -206,51 +208,80 @@ Parameters:
       - internal
     Description: Select whether the ELB is internet-facing (public) or internal (private).
   ASGMinSize:
+    Default: 2
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
   ASGMaxSize:
+    Default: 4
     Type: Number
     Description: Maximum instance size for the Auto Scaling Group.
   ASGDesiredCapacity:
+    Default: 2
     Type: Number
     Description: Desired capacity instance size for the Auto Scaling Group.
   EventBridgeSSMAutoRole:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}$'
     Type: String
     Description: EventBridge Role ARN to trigger SSM automation document
   AutoscalingRole:
-    Type: String
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}$'
     Description: Name for role for autoscaling group
+    MaxLength: "255"
+    MinLength: "2"
+    Type: String
   DomainDNSName:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    AllowedPattern: '^[a-zA-Z0-9]+[a-zA-Z0-9\-]*\.[a-zA-Z0-9]+$'
     Default: example.com
     Description: Fully qualified domain name (FQDN).
-    MaxLength: '255'
-    MinLength: '2'
+    MaxLength: '25'
+    MinLength: '3'
     Type: String
   ECSServiceRole:
-    Type: String
+    AllowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}|[\w+=,.@-]+)$'
     Description: ECS Service Role
-  ECSTaskRole:
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
-    Description: ECS Task Role  
+  ECSTaskRole:
+    AllowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}|[\w+=,.@-]+)$'
+    Description: ECS Task Role 
+    MaxLength: "255"
+    MinLength: "2"
+    Type: String 
   ExecutionResourceArn:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}$'
     Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
     Type: String
   AutoScalingGroupName:
+    AllowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
     Description: "Autoscaling group name"
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
   ECSImage:
+    AllowedPattern: '^[\w\-\:\.\#\/]*$'
     Description: ECS Windows Container Image
-    Type: String
     Default: "microsoft/iis"
+    MaxLength: "255"
+    MinLength: "2"
+    Type: String
   RemoveConfigurationDocName:
-    Type: String
+    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}$'
     Description: Document name of AWS Systems Manager Automation Document for Removal Config to trigger using EventBridge.
+    MaxLength: "128"
+    MinLength: "3"
+    Type: String 
   SetupConfigurationDocName:
-    Type: String
+    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}$'
     Description: Document name of AWS Systems Manager Automation Document for Setup Config to trigger using EventBridge.
+    MaxLength: "128"
+    MinLength: "3"
+    Type: String 
   SSMInstanceProfileName:
+    AllowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}|[\w+=,.@-]+)$'
     Description: Profile name for instances
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
   VPCID:
     Type: AWS::EC2::VPC::Id
