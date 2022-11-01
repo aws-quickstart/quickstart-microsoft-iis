@@ -40,7 +40,7 @@ Metadata:
         Default: Security group for autoscaling group
 Parameters:
   ConfigBucket:
-    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    AllowedPattern: '^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+$'
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
@@ -49,10 +49,10 @@ Parameters:
       It cannot start or end with a hyphen (-).
     Type: String
   DomainDNSName:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    AllowedPattern: '^[a-zA-Z0-9]+[a-zA-Z0-9\-]*\.[a-zA-Z0-9]+$'
     Default: example.com
     Description: Fully qualified domain name (FQDN).
-    MaxLength: '255'
+    MaxLength: '64'
     MinLength: '2'
     Type: String
   ImageId:
@@ -130,12 +130,15 @@ Parameters:
       - internal
     Description: Select whether the ELB is internet-facing (public) or internal (private).
   ASGMinSize:
+    Default: 2
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
   ASGMaxSize:
+    Default: 4
     Type: Number
     Description: Maximum instance size for the Auto Scaling Group.
   ASGDesiredCapacity:
+    Default: 2
     Type: Number
     Description: Desired capacity instance size for the Auto Scaling Group.
   ELBSubnet1ID:
@@ -151,21 +154,35 @@ Parameters:
     Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
     Type: AWS::EC2::Subnet::Id
   ExecutionResourceArn:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
     Type: String
   AutoScalingGroupName:
+    AllowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
     Description: "The autoscaling group name"
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
   SetupConfigurationDocName:
+    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}$'
+    MaxLength: "128"
+    MinLength: "3"
     Type: String
     Description: Document name of AWS Systems Manager Automation Document for Setup Config to trigger using EventBridge.
   RemoveConfigurationDocName:
+    AllowedPattern: ^[a-zA-Z0-9\_\\\-\.]{3,128}$
+    MaxLength: "128"
+    MinLength: "3"
     Type: String
     Description: Document name of AWS Systems Manager Automation Document for Removal Config to trigger using EventBridge.
   SSMInstanceProfileName:
-    Type: String
+    AllowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}|[\w+=,.@-]+)$'
     Description: Instance profile name needed for AWS Systems Manager.
+    MaxLength: "255"
+    MinLength: "2"
+    Type: String
   EventBridgeSSMAutoRole:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Type: String
     Description: EventBridge Role ARN to trigger SSM automation document
   ALBSecurityGroup:
