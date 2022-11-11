@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Scripts, Automation Documents, all components to perform configuration. (qs-1r91fg4is)
 Parameters:
   ConfigBucket:
-    AllowedPattern: '^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+$'
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
@@ -11,45 +11,29 @@ Parameters:
       It cannot start or end with a hyphen (-).
     Type: String
   DomainJoinSecrets:
-    AllowedPattern: '^arn:[^:]+:secretsmanager:[^:]+:\d{12}:secret:[\w\/\+\=\.\@\-]{1,512}$'
     Description: "The Secrets Manager name or ARN that will be used to perform all need domain actions."
-    MaxLength: '2048'
-    MinLength: '20'
     Type: "String"
   WriteS3LambdaRoleArn:
-    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Description: "The IAM Role ARN that will be used for the Lambda that writes file to Config Bucket."
-    MaxLength: '2048'
-    MinLength: '20'
-    Type: "String"
+    Type: String
   SetupConfigurationDocName:
-    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}$'
+    Type: String
     Description: Document name of AWS Systems Manager Automation Document for Setup Config.
-    MaxLength: "128"
-    MinLength: "3"
-    Type: String
   RemoveConfigurationDocName:
-    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}+$'
+    Type: String
     Description: Document name of AWS Systems Manager Automation Document for Removal Config.
-    MaxLength: "128"
-    MinLength: "3"
-    Type: String
   ECSClusterName:
-    AllowedPattern: '^[a-zA-Z0-9\-\_]*$'
-    Description: Name of ECS cluster.
-    MaxLength: "255"
-    MinLength: "2"
     Type: String
-  WebBucketName:
-    AllowedPattern: '(^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+)?$'
-    Description: Bucket name where html file is located for iis.
+    Description: Name of ECS cluster.
     Default: ""
-    Type: String 
+  WebBucketName:
+    Type: String
+    Description: Bucket name where html file is located for iis.
+    Default: ""   
   WebBucketKey:
-    AllowedPattern: '^[0-9a-zA-Z\-\/\.]+$'
+    Type: String
     Description: Bucket Key where html file is located for iis. Only change S3 Bucket Wepage is specified, otherwise leave as default.
     Default: "webfiles/index.html"
-    Type: String
 Conditions:
   ECSDeploy: !Not
     - !Equals
@@ -357,31 +341,19 @@ Resources:
             default: !If [ECSDeploy, 'ECS', 'EC2']
             description: "Is this automation doc being run on EC2 with ECS or only EC2"
             type: "String" 
-            AllowedValues:
-              - EC2
-              - ECS
           InstanceId:
-            allowedPattern: '^i-[a-f0-9]{8}(?:[a-f0-9]{9})?$'
             description: "ID of the Instance."
             type: "String" 
           ASGName:
-            allowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
             description: "Auto Scaling Group Name"
-            maxChars: '255'
-            minChars: '2'
             type: "String"
           ConfigBucket:
-            allowedPattern: '^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+$'
             description: "Bucket Containing Mof Files"
             type: "String"
           LCHName:
-            allowedPattern: '^[A-Za-z0-9\-\_\/]+$'
             description: "Life Cycle Hook Name"
-            maxChars: '255'
-            minChars: '2'
             type: "String"
           AutomationAssumeRole:
-            allowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512})?$'
             default: ""
             description: "(Optional) The ARN of the role that allows Automation to perform the actions on your behalf."
             type: "String" 
@@ -604,27 +576,18 @@ Resources:
         assumeRole: "{{AutomationAssumeRole}}"
         parameters:
           InstanceId:
-            allowedPattern: '^i-[a-f0-9]{8}(?:[a-f0-9]{9})?$'
             description: "ID of the Instance."
             type: "String" 
           ASGName:
-            allowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
             description: "Auto Scaling Group Name"
-            maxChars: '255'
-            minChars: '2'
             type: "String"
           ConfigBucket:
-            allowedPattern: '^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+$'
             description: "Bucket Containing Mof Files"
             type: "String"
           LCHName:
-            allowedPattern: '^[A-Za-z0-9\-\_\/]+$'
             description: "Life Cycle Hook Name"
-            maxChars: '255'
-            minChars: '2'
             type: "String"
           AutomationAssumeRole:
-            allowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512})?$'
             default: ""
             description: "(Optional) The ARN of the role that allows Automation to perform the actions on your behalf."
             type: "String" 
