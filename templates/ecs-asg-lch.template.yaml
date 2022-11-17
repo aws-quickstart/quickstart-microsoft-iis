@@ -117,7 +117,7 @@ Parameters:
     Description: ID of the domain member security group (e.g., sg-7f16e910).
     Type: AWS::EC2::SecurityGroup::Id
   ConfigBucket:
-    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    AllowedPattern: '^[a-z0-9]+[a-z0-9\.\-]*[a-z0-9]+$'
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
@@ -129,9 +129,9 @@ Parameters:
     Description: ID of the domain member security group (e.g., sg-7f16e910).
     Type: AWS::EC2::SecurityGroup::Id
   ECSClusterName:
-    AllowedPattern: '[a-zA-Z0-9\-]+'
-    Default: ECSSample
-    Description: Name of the ECS Cluster
+    Description: Name of ECS cluster.
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
   ELBSubnet1ID:
     Description: ID of the ELB subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
@@ -206,51 +206,69 @@ Parameters:
       - internal
     Description: Select whether the ELB is internet-facing (public) or internal (private).
   ASGMinSize:
+    Default: 2
     Type: Number
     Description: Minimum instance size for the Auto Scaling Group.
   ASGMaxSize:
+    Default: 4
     Type: Number
     Description: Maximum instance size for the Auto Scaling Group.
   ASGDesiredCapacity:
+    Default: 2
     Type: Number
     Description: Desired capacity instance size for the Auto Scaling Group.
   EventBridgeSSMAutoRole:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Type: String
     Description: EventBridge Role ARN to trigger SSM automation document
   AutoscalingRole:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Type: String
     Description: Name for role for autoscaling group
   DomainDNSName:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    AllowedPattern: '^[a-zA-Z0-9]+[a-zA-Z0-9\-]*\.[a-zA-Z0-9]+$'
     Default: example.com
     Description: Fully qualified domain name (FQDN).
-    MaxLength: '255'
+    MaxLength: '64'
     MinLength: '2'
     Type: String
   ECSServiceRole:
     Type: String
     Description: ECS Service Role
   ECSTaskRole:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Type: String
     Description: ECS Task Role  
   ExecutionResourceArn:
+    AllowedPattern: '^arn:[^:]+:iam::\d{12}:role\/[\w\/\+\=\.\@\-]{1,512}$'
     Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
     Type: String
   AutoScalingGroupName:
+    AllowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
     Description: "Autoscaling group name"
     Type: String
   ECSImage:
-    Description: ECS Windows Container Image
-    Type: String
+    AllowedPattern: '^[\w\-\:\.\#\/]*$'
     Default: "microsoft/iis"
+    Description: ECS Container Image for Windows. Only needed if ECS deployment type is used
+    MaxLength: "255"
+    MinLength: "2"
+    Type: String
   RemoveConfigurationDocName:
+    AllowedPattern: ^[a-zA-Z0-9\_\\\-\.]{3,128}$
+    MaxLength: "128"
+    MinLength: "3"
     Type: String
-    Description: Document name of AWS Systems Manager Automation Document for Removal Config to trigger using EventBridge.
   SetupConfigurationDocName:
+    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}$'
+    MaxLength: "128"
+    MinLength: "3"
     Type: String
-    Description: Document name of AWS Systems Manager Automation Document for Setup Config to trigger using EventBridge.
   SSMInstanceProfileName:
-    Description: Profile name for instances
+    AllowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}|[\w+=,.@-]+)$'
+    Description: Instance profile name needed for AWS Systems Manager.
+    MaxLength: "255"
+    MinLength: "2"
     Type: String
   VPCID:
     Type: AWS::EC2::VPC::Id
@@ -460,7 +478,6 @@ Resources:
               Try {
                 Copy-Item -Path temp\index.html -Destination C:\inetpub\wwwroot\ -Force
                 Write-Output "Copying index to wwwroot"
-
               }Catch [System.Exception] {
                 Write-Output "Failed to copy webpage c:\\windows\\temp\\index.html $_"
                 Exit 1
