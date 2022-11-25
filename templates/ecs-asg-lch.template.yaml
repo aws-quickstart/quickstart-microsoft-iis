@@ -129,6 +129,7 @@ Parameters:
     Description: ID of the domain member security group (e.g., sg-7f16e910).
     Type: AWS::EC2::SecurityGroup::Id
   ECSClusterName:
+    AllowedPattern: '^[\w\-]+$'
     Description: Name of ECS cluster.
     MaxLength: "255"
     MinLength: "2"
@@ -233,6 +234,7 @@ Parameters:
     MinLength: '2'
     Type: String
   ECSServiceRole:
+    AllowedPattern: '^(arn:[^:]+:iam::\d{12}:role\/[\w+=,.@\/-]{1,512}|[\w+=,.@\/-]+)$'
     Type: String
     Description: ECS Service Role
   ECSTaskRole:
@@ -244,7 +246,7 @@ Parameters:
     Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
     Type: String
   AutoScalingGroupName:
-    AllowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
+    AllowedPattern: '^[\w\W\s]+$'
     Description: "Autoscaling group name"
     Type: String
   ECSImage:
@@ -255,12 +257,12 @@ Parameters:
     MinLength: "2"
     Type: String
   RemoveConfigurationDocName:
-    AllowedPattern: ^[a-zA-Z0-9\_\\\-\.]{3,128}$
+    AllowedPattern: ^[\w\\\-\.]{3,128}$
     MaxLength: "128"
     MinLength: "3"
     Type: String
   SetupConfigurationDocName:
-    AllowedPattern: '^[a-zA-Z0-9\_\\\-\.]{3,128}$'
+    AllowedPattern: '^[\w\\\-\.]{3,128}$'
     MaxLength: "128"
     MinLength: "3"
     Type: String

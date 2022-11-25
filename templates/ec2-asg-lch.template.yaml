@@ -158,7 +158,7 @@ Parameters:
     Description: "The IAM Role ARN that will be passed by Event Bridge to SSM Automation."
     Type: String
   AutoScalingGroupName:
-    AllowedPattern: '^[a-zA-Z0-9\_\W\s]+$'
+    AllowedPattern: '^[\w\W\s]+$'
     Description: "The autoscaling group name"
     MaxLength: "255"
     MinLength: "2"

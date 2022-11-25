@@ -17,10 +17,9 @@ Parameters:
     MinLength: '20'
     Type: "String"
   ECSClusterName:
-    AllowedPattern: '^[a-zA-Z0-9\-\_]*$'
+    AllowedPattern: '^([\w\-]+)?$'
     Description: Name of ECS cluster.
     MaxLength: "255"
-    MinLength: "2"
     Type: String
   WebAccessCIDR:
     AllowedPattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
