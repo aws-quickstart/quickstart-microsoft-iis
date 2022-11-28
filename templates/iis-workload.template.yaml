@@ -342,7 +342,10 @@ Resources:
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
-        ECSClusterName: !Sub ECSCluster-${AWS::StackName}
+        ECSClusterName: !If
+          - ECSDeploy
+          - !Sub ECSCluster-${AWS::StackName}
+          - ''
         RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
         SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
         VPCID: !Ref 'VPCID'
@@ -356,7 +359,10 @@ Resources:
       Parameters:
         ConfigBucket: !Ref 'ConfigBucket'
         DomainJoinSecrets: !Ref 'DomainJoinSecrets'
-        ECSClusterName: !Sub ECSCluster-${AWS::StackName}
+        ECSClusterName: !If
+          - ECSDeploy
+          - !Sub ECSCluster-${AWS::StackName}
+          - ''
         RemoveConfigurationDocName: !Sub RemoveConfigurationDocName-${AWS::StackName}
         SetupConfigurationDocName: !Sub SetupConfiguration-${AWS::StackName}
         WebBucketKey: !Ref WebBucketKey
