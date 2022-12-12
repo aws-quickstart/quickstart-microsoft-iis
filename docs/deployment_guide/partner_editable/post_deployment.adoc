@@ -27,7 +27,7 @@ NOTE: If you are unable to connect to the test page, review the security groups 
 
 == Using AWS Systems Manager Agent
 
-This Quick Start deploys AWS Systems Manager Agent (SSM Agent) on all EC2 instances. With SSM Agent, you can use the Windows remote desktop protocol (RDP) to connect to EC2 instances without the need for an RDP bastion host or opening inbound port 3389 with Session Manager. This section explains the requirements for using this feature and how to connect to an EC2 instance of Windows Server using RDP.
+This Partner Solution deploys AWS Systems Manager Agent (SSM Agent) on all EC2 instances. With SSM Agent, you can use the Windows remote desktop protocol (RDP) to connect to EC2 instances without the need for an RDP bastion host or opening inbound port 3389 with Session Manager. This section explains the requirements for using this feature and how to connect to an EC2 instance of Windows Server using RDP.
 
 See the following sites for more information about these AWS services and software:
 
@@ -42,7 +42,7 @@ See the following sites for more information about these AWS services and softwa
  * SSM Agent must be installed on EC2 instances.*
  * Instance role attached allowing access to Systems Manager API.*
 
-*These prerequisites are completed automatically as part of the Quick Start deployment.
+*These prerequisites are completed automatically as part of the Partner Solution deployment.
 
 === Connecting to a Windows instance with RDP
 
@@ -87,7 +87,7 @@ image::../docs/deployment_guide/images/loggedin.png[RDP,width=100%,height=100%]
 image::../docs/deployment_guide/images/rdp5.png[RDP,width=100%,height=100%]
 
 == Post-deployment steps
-If you want to modify this Quick Start see the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml] template. This AWS Cloudformation template uploads the MOF files and creates the automation documents that are triggered by the Auto Scaling group's lifecycle hooks. 
+If you want to modify this Partner Solution see the https://github.com/aws-quickstart/quickstart-microsoft-iis/blob/main/templates/automation-parts.template.yaml[automation-parts.template.yaml] template. This AWS Cloudformation template uploads the MOF files and creates the automation documents that are triggered by the Auto Scaling group's lifecycle hooks. 
 
 The following code block demonstrates a step in the AWS Systems Manager automation document. These steps under the *main step* section can be modified to support your own automation steps and configuration.
 
