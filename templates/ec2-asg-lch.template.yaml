@@ -211,7 +211,8 @@ Resources:
               - Key: "DomainToJoin"
                 Value: !Ref "DomainDNSName"
         MetadataOptions:
-          HttpTokens: Required
+          HttpEndpoint: enabled
+          HttpTokens: required
   ALBResource:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:

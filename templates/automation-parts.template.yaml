@@ -421,7 +421,8 @@ Resources:
                   - |
                      Import-Module AWSPowerShell
                      Try {
-                       $instanceid = (Invoke-RestMethod -Method Get -Uri http://169.254.169.254/latest/meta-data/instance-id)
+                       [string]$token = Invoke-RestMethod -Headers @{"X-aws-ec2-metadata-token-ttl-seconds" = "600"} -Method PUT -Uri http://169.254.169.254/latest/api/token
+                       $instanceid = (Invoke-RestMethod -Headers @{"X-aws-ec2-metadata-token" = $token} -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id)
                        Write-Output "Creating new ec2 name tag: $env:COMPUTERNAME on $instanceId "
                        New-EC2Tag -Resource $instanceId -Tag @{Key="Name";Value=$env:COMPUTERNAME}
                      }Catch [System.Exception] {
