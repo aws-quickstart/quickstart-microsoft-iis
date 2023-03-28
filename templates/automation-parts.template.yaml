@@ -446,8 +446,6 @@ Resources:
                   - "Uninstall and reinstall"
                 name:
                   - "AmazonCloudWatchAgent"
-                version:
-                  - "latest"
           - name: "configureCloudWatchAgent"
             action: aws:runCommand
             onFailure: step:abandonHookAction
