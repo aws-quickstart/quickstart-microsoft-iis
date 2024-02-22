@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Launch a Resource Group. (qs-1spjhsd5s)
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W9002
+        - W9003
 Parameters:
   ResourceGroupKey:
     Default: 'ASGName'
